@@ -1557,6 +1557,7 @@ function generateSuratLantikan() {
   }
   
   const date = document.getElementById('sl-date').value;
+  const hijriDate = document.getElementById('sl-date-hijri').value;
   const payStudent = document.getElementById('sl-pay-student').value;
   const payExternal = document.getElementById('sl-pay-external').value;
   const payPerformance = document.getElementById('sl-pay-performance').value;
@@ -1568,10 +1569,135 @@ function generateSuratLantikan() {
     return;
   }
   
-  alert('Surat Lantikan akan dijana!\n\nProgram: ' + selectedProgramForSL.name + '\nJumlah Krew: ' + selectedCrewForSL.length + '\nJumlah Keseluruhan: RM ' + grandTotal + '\n\nNota: Fungsi penuh untuk jana DOCX akan ditambah kemudian.');
+  // Format date for display
+  const dateObj = new Date(date);
+  const formattedDate = formatDateMalay(date);
   
-  // Here you would integrate with a library like docxtemplater to generate the actual DOCX file
-  // For now, we'll just show the confirmation
+  // Generate HTML content for the letter
+  let htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Surat Lantikan - ${selectedProgramForSL.name}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
+    .header { text-align: right; margin-bottom: 30px; }
+    .title { text-align: center; font-weight: bold; margin: 30px 0; text-decoration: underline; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+    th { background-color: #f0f0f0; font-weight: bold; }
+    .signature { margin-top: 50px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <p><strong>Rujukan Kami:</strong> UPS/HEP/JBUD/600Y ( )</p>
+    <p><strong>Tarikh:</strong> ${formattedDate}</p>
+    <p><strong>Tarikh (Hijrah):</strong> ${hijriDate}</p>
+  </div>
+  
+  <p>Senarai Seperti di Lampiran</p>
+  
+  <p><strong>Assalamualaikum warahmatullahi wabarakatuh</strong></p>
+  
+  <p>Saudara/i,</p>
+  
+  <div class="title">LANTIKAN SEBAGAI KREW TEKNIKAL BAGI NAMA PROGRAM</div>
+  
+  <p>Saya dengan segala hormatnya merujuk kepada perkara di atas.</p>
+  
+  <p>2. Sukacita dimaklumkan saudara/i dilantik menjadi krew teknikal tersebut yang akan bertanggung jawab PILIH TEMPAT, UPSI. Butiran tugas adalah seperti berikut:</p>
+  
+  <table>
+    <tr>
+      <th>Tarikh Pemasangan</th>
+      <td>${selectedProgramForSL.installDate || '-'}</td>
+    </tr>
+    <tr>
+      <th>Tarikh Program</th>
+      <td>${selectedProgramForSL.date || '-'}</td>
+    </tr>
+    <tr>
+      <th>Masa</th>
+      <td>${selectedProgramForSL.time || '08:00 am - 11:00 pm'}</td>
+    </tr>
+  </table>
+  
+  <p>3. Segala perbelanjaan dan kerjasama saudara/i amat dihargai dan dihadiahi dengan upaya sebanyak <strong>RM ${grandTotal}</strong> akan dibuat mengikut Kadar Bayaran sebenar dan akan dibantu dengan upaya tenaga kasih, selamat.</p>
+  
+  <p><strong>"MALAYSIA MADANI"</strong><br>
+  <strong>"BERKHIDMAT UNTUK NEGARA"</strong><br>
+  <strong>"PENERAJU KECEMERLANGAN PENDIDIKAN"</strong></p>
+  
+  <p>Sekian, terima kasih.</p>
+  
+  <div class="signature">
+    <p><strong>"Saya yang menjalankan amanah"</strong></p>
+    <br><br>
+    <p><strong>(MUHAMMAD FAKRULLAH BIN FARROK)</strong><br>
+    Pegawai Kebudayaan</p>
+    <p>s.k. - Fail</p>
+  </div>
+  
+  <hr style="margin-top: 50px;">
+  
+  <h3>SENARAI NAMA KREW</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Bil</th>
+        <th>Nama</th>
+        <th>No. Matrik (Pelajar) / No. Kad Pengenalan (Krew Luar)</th>
+        <th>No. Akaun Bank</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+
+  // Add crew members to the table
+  selectedCrewForSL.forEach((crew, index) => {
+    htmlContent += `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${crew.name}</td>
+        <td>${crew.ic}</td>
+        <td>${crew.bank_account}</td>
+      </tr>
+    `;
+  });
+  
+  htmlContent += `
+    </tbody>
+  </table>
+  
+  <div style="margin-top: 30px;">
+    <p><strong>Maklumat Bayaran:</strong></p>
+    <ul>
+      <li>Bayaran Krew Teknikal (Pelajar): ${payStudent}</li>
+      <li>Bayaran Krew Teknikal (Luar): ${payExternal}</li>
+      <li>Bayaran Khidmat Persembahan: ${payPerformance}</li>
+      <li>Jumlah Hari: ${totalDays}</li>
+      <li><strong>Jumlah Keseluruhan: RM ${grandTotal}</strong></li>
+    </ul>
+  </div>
+  
+</body>
+</html>
+  `;
+  
+  // Create a blob and download
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Surat_Lantikan_${selectedProgramForSL.name.replace(/[^a-z0-9]/gi, '_')}_${date}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  alert('Surat Lantikan telah dijana!\n\nProgram: ' + selectedProgramForSL.name + '\nJumlah Krew: ' + selectedCrewForSL.length + '\n\nFail HTML telah dimuat turun. Anda boleh membuka fail tersebut dan menyimpannya sebagai PDF atau DOCX.');
 }
 </script>
 </body>
