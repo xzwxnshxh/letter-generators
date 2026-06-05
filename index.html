@@ -313,7 +313,7 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
           </div>
           <div class="form-group full">
             <label class="form-label">Nama Program</label>
-            <input class="form-input" id="sl-program-name" type="text" readonly />
+            <input class="form-input" id="sl-program-name" type="text" readonly placeholder="Pilih program di atas untuk auto-isi" style="background:var(--surface2);font-weight:600" />
           </div>
         </div>
       </div>
@@ -1315,7 +1315,14 @@ function onProgramSelectedSL() {
   selectedProgramForSL = programs.find(p => p.id === progId);
   
   if (selectedProgramForSL) {
+    // Auto-populate program name
     document.getElementById('sl-program-name').value = selectedProgramForSL.name;
+    
+    // Optional: You can also pre-fill reference number based on program
+    // const refField = document.getElementById('sl-ref');
+    // if (!refField.value) {
+    //   refField.value = 'UPS/HEP/JBUD/600Y ( )';
+    // }
   }
 }
 
