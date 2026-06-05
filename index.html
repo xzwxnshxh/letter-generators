@@ -311,10 +311,6 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
           <div class="card-title"><div class="card-title-bar"></div>Maklumat Surat Lantikan</div>
         </div>
         <div class="form-grid">
-          <div class="form-group full">
-            <label class="form-label">Rujukan Kami</label>
-            <input class="form-input" id="sl-ref" type="text" placeholder="UPS/HEP/JBUD/600Y ( )" />
-          </div>
           <div class="form-group">
             <label class="form-label">Tarikh Surat (Masihi)</label>
             <input class="form-input" id="sl-date" type="date" style="padding-right:12px" onchange="updateHijriDate()" />
@@ -1560,7 +1556,6 @@ function generateSuratLantikan() {
     return;
   }
   
-  const refNo = document.getElementById('sl-ref').value;
   const date = document.getElementById('sl-date').value;
   const payStudent = document.getElementById('sl-pay-student').value;
   const payExternal = document.getElementById('sl-pay-external').value;
@@ -1568,8 +1563,8 @@ function generateSuratLantikan() {
   const totalDays = document.getElementById('sl-total-days').value;
   const grandTotal = document.getElementById('sl-grand-total').value;
   
-  if (!refNo || !date) {
-    alert('Sila lengkapkan maklumat rujukan dan tarikh');
+  if (!date) {
+    alert('Sila lengkapkan maklumat tarikh');
     return;
   }
   
