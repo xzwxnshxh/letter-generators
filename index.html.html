@@ -171,7 +171,7 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
     <div class="nav-item" onclick="navigate('crew')" id="nav-crew"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Crew</div>
     <div class="nav-item" onclick="navigate('documents')" id="nav-documents"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Documents</div>
     <div class="nav-item" onclick="navigate('sebutharga')" id="nav-sebutharga"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>Sebut Harga</div>
-    <div class="nav-item"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</div>
+    <div class="nav-item" id="logout-btn"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</div>
   </nav>
   <div class="sidebar-bottom"><div class="user-chip"><div class="user-avatar">PK</div><div><div class="user-name">Pusat Kebudayaan</div><div class="user-role">UPSI</div></div></div></div>
 </aside>
@@ -1024,3 +1024,36 @@ navigate('programs');
 </div>
 </body>
 </html>
+
+
+
+// === LOGIN PROTECTION ===
+// Check if user is logged in
+if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+  window.location.href = 'login.html';
+}
+
+// Logout functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (confirm('Adakah anda pasti ingin log keluar?')) {
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('userEmail');
+        window.location.href = 'login.html';
+      }
+    });
+  }
+
+  // Update user display with logged-in email
+  const userEmail = sessionStorage.getItem('userEmail');
+  if (userEmail) {
+    const userName = userEmail.split('@')[0];
+    const userNameEl = document.querySelector('.user-name');
+    if (userNameEl) {
+      userNameEl.textContent = userName;
+    }
+  }
+});
