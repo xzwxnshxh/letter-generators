@@ -171,6 +171,7 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
     <div class="nav-item" onclick="navigate('crew')" id="nav-crew"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Crew</div>
     <div class="nav-item" onclick="navigate('documents')" id="nav-documents"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Documents</div>
     <div class="nav-item" onclick="navigate('sebutharga')" id="nav-sebutharga"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>Sebut Harga</div>
+    <div class="nav-item" onclick="navigate('suratlantikan')" id="nav-suratlantikan"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Surat Lantikan</div>
     <div class="nav-item" id="logout-btn"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</div>
   </nav>
   <div class="sidebar-bottom"><div class="user-chip"><div class="user-avatar">PK</div><div><div class="user-name">Pusat Kebudayaan</div><div class="user-role">UPSI</div></div></div></div>
@@ -280,6 +281,109 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
         <div class="crew-grid" id="crew-grid" style="display:none"></div>
       </div>
     </div>
+
+    <!-- SURAT LANTIKAN PAGE -->
+    <div class="page" id="page-suratlantikan">
+      <div class="prog-selector-wrap">
+        <div class="prog-selector-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg></div>
+        <div style="flex:1">
+          <div class="prog-selector-label">Pilih Program</div>
+          <select class="form-input prog-selector-select" id="prog-selector-sl" onchange="onProgramSelectedSL()">
+            <option value="">— Pilih program untuk surat lantikan —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-bar"></div>Maklumat Surat Lantikan</div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">Rujukan Kami</label>
+            <input class="form-input" id="sl-ref" type="text" placeholder="UPS/HEP/JBUD/600Y ( )" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tarikh Surat</label>
+            <input class="form-input" id="sl-date" type="text" placeholder="3 Jun 2025" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nama Program</label>
+            <input class="form-input" id="sl-program-name" type="text" readonly />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-bar"></div>Senarai Krew Teknikal<span class="count-badge" id="sl-crew-count" style="display:none">0</span></div>
+          <button class="btn btn-primary" onclick="openAddCrewToSL()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Tambah Krew
+          </button>
+        </div>
+        <div id="sl-crew-empty" class="empty-state">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <h3>Tiada krew dipilih</h3>
+          <p>Klik "Tambah Krew" untuk memilih krew teknikal untuk surat lantikan ini.</p>
+        </div>
+        <div id="sl-crew-table-wrap" style="display:none">
+          <table class="q-table">
+            <thead>
+              <tr>
+                <th>Bil</th>
+                <th>Nama</th>
+                <th>No. Matrik (Pelajar) / No. Kad Pengenalan (Krew Luar / Pelajar Cemerlang / Persembahan)</th>
+                <th>No. Akaun Bank</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="sl-crew-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-bar"></div>Bayaran Krew & Khidmat Persembahan</div>
+        </div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label">Bayaran Krew Teknikal (Pelajar)</label>
+            <input class="form-input" id="sl-pay-student" type="text" placeholder="RM 150" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bayaran Krew Teknikal (Luar)</label>
+            <input class="form-input" id="sl-pay-external" type="text" placeholder="RM 150" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bayaran Khidmat Persembahan / Pelajar Cemerlang</label>
+            <input class="form-input" id="sl-pay-performance" type="text" placeholder="RM 150" />
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="form-group">
+            <label class="form-label">Jumlah Hari (Bayaran Krew)</label>
+            <input class="form-input" id="sl-total-days" type="number" value="1" min="1" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jumlah Keseluruhan</label>
+            <input class="form-input" id="sl-grand-total" type="text" placeholder="150" readonly style="font-weight:600;color:var(--upsi-purple)" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--surface2);border:2px dashed var(--border2)">
+        <div style="text-align:center;padding:20px">
+          <button class="btn btn-dark" onclick="generateSuratLantikan()" style="font-size:15px;height:44px;padding:0 32px">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Jana Surat Lantikan
+          </button>
+          <p style="font-size:12px;color:var(--text3);margin-top:12px">Surat akan dijana dalam format DOCX</p>
+        </div>
+      </div>
+    </div>
+
     <!-- PLACEHOLDER PAGE -->
     <div class="page" id="page-placeholder">
       <div class="card"><div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><h3 id="placeholder-title">Halaman ini akan datang</h3><p>Pilih menu lain di sebelah kiri.</p></div></div>
@@ -1023,6 +1127,23 @@ navigate('programs');
   </div>
 </div>
 
+<!-- MODAL: SELECT CREW FOR SURAT LANTIKAN -->
+<div class="modal-overlay" id="select-crew-modal" onclick="closeSelectCrewModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Pilih Krew untuk Surat Lantikan</div>
+      <button class="modal-close" onclick="closeSelectCrewModal()"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div id="crew-selection-list" style="max-height:400px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeSelectCrewModal()">Batal</button>
+      <button class="btn btn-primary" onclick="addSelectedCrewToSL()">Tambah Krew Terpilih</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // === LOGIN PROTECTION ===
 // Check if user is logged in
@@ -1054,7 +1175,184 @@ document.addEventListener('DOMContentLoaded', function() {
       userNameEl.textContent = userName;
     }
   }
+
+  // Initialize Surat Lantikan
+  initSuratLantikan();
 });
+
+// === SURAT LANTIKAN FUNCTIONALITY ===
+let selectedCrewForSL = [];
+let selectedProgramForSL = null;
+
+function initSuratLantikan() {
+  // Populate program selector for Surat Lantikan
+  const programs = JSON.parse(localStorage.getItem('programs') || '[]');
+  const selector = document.getElementById('prog-selector-sl');
+  if (selector) {
+    selector.innerHTML = '<option value="">— Pilih program untuk surat lantikan —</option>';
+    programs.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      selector.appendChild(opt);
+    });
+  }
+}
+
+function onProgramSelectedSL() {
+  const selector = document.getElementById('prog-selector-sl');
+  const progId = selector.value;
+  
+  if (!progId) {
+    selectedProgramForSL = null;
+    document.getElementById('sl-program-name').value = '';
+    return;
+  }
+  
+  const programs = JSON.parse(localStorage.getItem('programs') || '[]');
+  selectedProgramForSL = programs.find(p => p.id === progId);
+  
+  if (selectedProgramForSL) {
+    document.getElementById('sl-program-name').value = selectedProgramForSL.name;
+  }
+}
+
+function openAddCrewToSL() {
+  const crews = JSON.parse(localStorage.getItem('crews') || '[]');
+  if (crews.length === 0) {
+    alert('Tiada krew tersedia. Sila tambah krew terlebih dahulu di menu Crew.');
+    return;
+  }
+  
+  const listEl = document.getElementById('crew-selection-list');
+  listEl.innerHTML = '';
+  
+  crews.forEach(crew => {
+    const isSelected = selectedCrewForSL.some(c => c.id === crew.id);
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.15s';
+    div.innerHTML = `
+      <input type="checkbox" ${isSelected ? 'checked' : ''} data-crew-id="${crew.id}" style="width:18px;height:18px;cursor:pointer">
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:14px;color:var(--text)">${crew.name}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">${crew.ic}</div>
+      </div>
+    `;
+    div.onclick = function(e) {
+      if (e.target.tagName !== 'INPUT') {
+        const checkbox = div.querySelector('input');
+        checkbox.checked = !checkbox.checked;
+      }
+    };
+    listEl.appendChild(div);
+  });
+  
+  document.getElementById('select-crew-modal').classList.add('open');
+}
+
+function closeSelectCrewModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('select-crew-modal').classList.remove('open');
+}
+
+function addSelectedCrewToSL() {
+  const checkboxes = document.querySelectorAll('#crew-selection-list input[type="checkbox"]:checked');
+  const crews = JSON.parse(localStorage.getItem('crews') || '[]');
+  
+  selectedCrewForSL = [];
+  checkboxes.forEach(cb => {
+    const crewId = cb.dataset.crewId;
+    const crew = crews.find(c => c.id === crewId);
+    if (crew) {
+      selectedCrewForSL.push(crew);
+    }
+  });
+  
+  renderSLCrewTable();
+  closeSelectCrewModal();
+}
+
+function renderSLCrewTable() {
+  const tbody = document.getElementById('sl-crew-tbody');
+  const emptyEl = document.getElementById('sl-crew-empty');
+  const wrapEl = document.getElementById('sl-crew-table-wrap');
+  const countBadge = document.getElementById('sl-crew-count');
+  
+  if (selectedCrewForSL.length === 0) {
+    emptyEl.style.display = 'block';
+    wrapEl.style.display = 'none';
+    countBadge.style.display = 'none';
+    return;
+  }
+  
+  emptyEl.style.display = 'none';
+  wrapEl.style.display = 'block';
+  countBadge.style.display = 'inline-block';
+  countBadge.textContent = selectedCrewForSL.length;
+  
+  tbody.innerHTML = '';
+  selectedCrewForSL.forEach((crew, index) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${index + 1}</td>
+      <td style="font-weight:600">${crew.name}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px">${crew.ic}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--upsi-gold-dark)">${crew.bank_account}</td>
+      <td>
+        <button class="btn-danger-soft" onclick="removeCrewFromSL('${crew.id}')">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Buang
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  calculateSLTotal();
+}
+
+function removeCrewFromSL(crewId) {
+  selectedCrewForSL = selectedCrewForSL.filter(c => c.id !== crewId);
+  renderSLCrewTable();
+}
+
+function calculateSLTotal() {
+  const days = parseInt(document.getElementById('sl-total-days').value) || 1;
+  const total = selectedCrewForSL.length * days * 150; // Assuming RM150 per day per crew
+  document.getElementById('sl-grand-total').value = total;
+}
+
+function generateSuratLantikan() {
+  if (!selectedProgramForSL) {
+    alert('Sila pilih program terlebih dahulu');
+    return;
+  }
+  
+  if (selectedCrewForSL.length === 0) {
+    alert('Sila pilih sekurang-kurangnya satu krew');
+    return;
+  }
+  
+  const refNo = document.getElementById('sl-ref').value;
+  const date = document.getElementById('sl-date').value;
+  const payStudent = document.getElementById('sl-pay-student').value;
+  const payExternal = document.getElementById('sl-pay-external').value;
+  const payPerformance = document.getElementById('sl-pay-performance').value;
+  const totalDays = document.getElementById('sl-total-days').value;
+  const grandTotal = document.getElementById('sl-grand-total').value;
+  
+  if (!refNo || !date) {
+    alert('Sila lengkapkan maklumat rujukan dan tarikh');
+    return;
+  }
+  
+  alert('Surat Lantikan akan dijana!\n\nProgram: ' + selectedProgramForSL.name + '\nJumlah Krew: ' + selectedCrewForSL.length + '\nJumlah Keseluruhan: RM ' + grandTotal + '\n\nNota: Fungsi penuh untuk jana DOCX akan ditambah kemudian.');
+  
+  // Here you would integrate with a library like docxtemplater to generate the actual DOCX file
+  // For now, we'll just show the confirmation
+}
 </script>
 </body>
 </html>
