@@ -494,6 +494,7 @@ function navigate(page) {
   if (mainPage) { mainPage.classList.add('active'); }
   else { document.getElementById('placeholder-title').textContent = meta.title; document.getElementById('page-placeholder').classList.add('active'); }
   if (page === 'sebutharga') refreshProgramSelector();
+  if (page === 'suratlantikan') initSuratLantikan();
   if (page === 'programs') renderPrograms();
   if (page === 'documents') renderDocuments();
   if (page === 'crew') renderCrew();
@@ -1403,7 +1404,7 @@ let selectedProgramForSL = null;
 
 function initSuratLantikan() {
   // Populate program selector for Surat Lantikan
-  const programs = JSON.parse(localStorage.getItem('programs') || '[]');
+  const programs = JSON.parse(localStorage.getItem('upsi_programs') || '[]');
   const selector = document.getElementById('prog-selector-sl');
   if (selector) {
     selector.innerHTML = '<option value="">— Pilih program untuk surat lantikan —</option>';
@@ -1426,7 +1427,7 @@ function onProgramSelectedSL() {
     return;
   }
   
-  const programs = JSON.parse(localStorage.getItem('programs') || '[]');
+  const programs = JSON.parse(localStorage.getItem('upsi_programs') || '[]');
   selectedProgramForSL = programs.find(p => p.id === progId);
   
   if (selectedProgramForSL) {
