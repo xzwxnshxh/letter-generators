@@ -1312,7 +1312,7 @@ function importCrewFromExcel(event) {
       // Skip header row and process data
       let importedCount = 0;
       let errorCount = 0;
-      const crews = JSON.parse(localStorage.getItem('crews') || '[]');
+      const crews = JSON.parse(localStorage.getItem('upsi_crew') || '[]');
       
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i];
@@ -1343,7 +1343,10 @@ function importCrewFromExcel(event) {
       }
       
       // Save to localStorage
-      localStorage.setItem('crews', JSON.stringify(crews));
+      localStorage.setItem('upsi_crew', JSON.stringify(crews));
+      
+      // Update global crewList variable
+      crewList = crews;
       
       // Show result message
       let message = `Import selesai!\n\nBerjaya: ${importedCount} krew\n`;
@@ -1353,9 +1356,7 @@ function importCrewFromExcel(event) {
       alert(message);
       
       // Refresh crew list
-      if (typeof renderCrewList === 'function') {
-        renderCrewList();
-      }
+      renderCrew();
       
       // Reset file input
       event.target.value = '';
@@ -1441,7 +1442,7 @@ function onProgramSelectedSL() {
 }
 
 function openAddCrewToSL() {
-  const crews = JSON.parse(localStorage.getItem('crews') || '[]');
+  const crews = JSON.parse(localStorage.getItem('upsi_crew') || '[]');
   if (crews.length === 0) {
     alert('Tiada krew tersedia. Sila tambah krew terlebih dahulu di menu Crew.');
     return;
@@ -1480,7 +1481,7 @@ function closeSelectCrewModal(event) {
 
 function addSelectedCrewToSL() {
   const checkboxes = document.querySelectorAll('#crew-selection-list input[type="checkbox"]:checked');
-  const crews = JSON.parse(localStorage.getItem('crews') || '[]');
+  const crews = JSON.parse(localStorage.getItem('upsi_crew') || '[]');
   
   selectedCrewForSL = [];
   checkboxes.forEach(cb => {
