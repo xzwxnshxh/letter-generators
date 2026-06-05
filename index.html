@@ -304,10 +304,14 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
             <input class="form-input" id="sl-ref" type="text" placeholder="UPS/HEP/JBUD/600Y ( )" />
           </div>
           <div class="form-group">
-            <label class="form-label">Tarikh Surat</label>
-            <input class="form-input" id="sl-date" type="text" placeholder="3 Jun 2025" />
+            <label class="form-label">Tarikh Surat (Masihi)</label>
+            <input class="form-input" id="sl-date" type="date" style="padding-right:12px" onchange="updateHijriDate()" />
           </div>
           <div class="form-group">
+            <label class="form-label">Tarikh Surat (Hijrah)</label>
+            <input class="form-input" id="sl-date-hijri" type="text" placeholder="8 Zulhijjah 1446" readonly style="background:var(--surface2)" />
+          </div>
+          <div class="form-group full">
             <label class="form-label">Nama Program</label>
             <input class="form-input" id="sl-program-name" type="text" readonly />
           </div>
@@ -1219,6 +1223,63 @@ function formatDateMalay(dateStr) {
                   'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
   
   return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+}
+
+// Convert Gregorian date to Hijri date (Islamic calendar)
+function gregorianToHijri(dateStr) {
+  if (!dateStr) return '';
+  
+  const date = new Date(dateStr);
+  
+  // Using Kuwaiti algorithm for Hijri conversion
+  // This is an approximation - for exact dates, you'd use a proper Islamic calendar API
+  const gYear = date.getFullYear();
+  const gMonth = date.getMonth() + 1;
+  const gDay = date.getDate();
+  
+  let wd;
+  let intPart = function(floatNum) {
+    return floatNum < 0 ? Math.ceil(floatNum) : Math.floor(floatNum);
+  };
+  
+  if ((gYear > 1582) || ((gYear == 1582) && (gMonth > 10)) || ((gYear == 1582) && (gMonth == 10) && (gDay > 14))) {
+    wd = intPart((1461 * (gYear + 4800 + intPart((gMonth - 14) / 12))) / 4) + 
+         intPart((367 * (gMonth - 2 - 12 * (intPart((gMonth - 14) / 12)))) / 12) - 
+         intPart((3 * (intPart((gYear + 4900 + intPart((gMonth - 14) / 12)) / 100))) / 4) + 
+         gDay - 32075;
+  } else {
+    wd = 367 * gYear - intPart((7 * (gYear + 5001 + intPart((gMonth - 9) / 7))) / 4) + 
+         intPart((275 * gMonth) / 9) + gDay + 1729777;
+  }
+  
+  const l = wd - 1948440 + 10632;
+  const n = intPart((l - 1) / 10631);
+  const l1 = l - 10631 * n + 354;
+  const j = (intPart((10985 - l1) / 5316)) * (intPart((50 * l1) / 17719)) + 
+           (intPart(l1 / 5670)) * (intPart((43 * l1) / 15238));
+  const l2 = l1 - (intPart((30 - j) / 15)) * (intPart((17719 * j) / 50)) - 
+            (intPart(j / 16)) * (intPart((15238 * j) / 43)) + 29;
+  const m = intPart((24 * l2) / 709);
+  const d = l2 - intPart((709 * m) / 24);
+  const y = 30 * n + j - 30;
+  
+  const hijriMonths = [
+    'Muharram', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jamadilawal', 'Jamadilakhir',
+    'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijjah'
+  ];
+  
+  return d + ' ' + hijriMonths[m - 1] + ' ' + y;
+}
+
+// Update Hijri date when Gregorian date changes
+function updateHijriDate() {
+  const dateStr = document.getElementById('sl-date').value;
+  const hijriDateEl = document.getElementById('sl-date-hijri');
+  
+  if (dateStr && hijriDateEl) {
+    const hijriDate = gregorianToHijri(dateStr);
+    hijriDateEl.value = hijriDate;
+  }
 }
 
 // === SURAT LANTIKAN FUNCTIONALITY ===
