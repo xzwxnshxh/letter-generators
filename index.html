@@ -1022,11 +1022,8 @@ navigate('programs');
     <div class="modal-footer"><button class="btn btn-outline" onclick="closeDeleteCrewModal()">Batal</button><button class="btn" style="background:var(--red);color:#fff" onclick="confirmDeleteCrew()">Ya, Padam</button></div>
   </div>
 </div>
-</body>
-</html>
 
-
-
+<script>
 // === LOGIN PROTECTION ===
 // Check if user is logged in
 if (sessionStorage.getItem('isLoggedIn') !== 'true') {
@@ -1039,6 +1036,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       if (confirm('Adakah anda pasti ingin log keluar?')) {
         sessionStorage.removeItem('isLoggedIn');
         sessionStorage.removeItem('userEmail');
@@ -1057,3 +1055,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 });
+</script>
+</body>
+</html>
