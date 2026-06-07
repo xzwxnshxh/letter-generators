@@ -6,6 +6,8 @@
 <title>Crew Generator — Pusat Kebudayaan UPSI</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -20,8 +22,138 @@
   --shadow:0 1px 3px rgba(103,40,137,.08),0 4px 12px rgba(103,40,137,.06);
   --shadow-lg:0 8px 24px rgba(103,40,137,.12);
 }
-body{font-family:'DM Sans',sans-serif;background:var(--upsi-purple);min-height:100vh;color:var(--text)}
+body{font-family:'DM Sans',sans-serif;background:var(--upsi-purple);min-height:100vh;color:var(--text);overflow-x:hidden}
 .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* Mobile Menu Button */
+.mobile-menu-btn{display:none;position:fixed;top:15px;left:15px;z-index:200;width:40px;height:40px;background:var(--upsi-gold);border:none;border-radius:8px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.mobile-menu-btn span{width:22px;height:3px;background:#fff;border-radius:2px;transition:all .3s}
+.mobile-menu-btn.active span:nth-child(1){transform:rotate(45deg) translate(6px,6px)}
+.mobile-menu-btn.active span:nth-child(2){opacity:0}
+.mobile-menu-btn.active span:nth-child(3){transform:rotate(-45deg) translate(6px,-6px)}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .mobile-menu-btn{display:flex}
+  
+  .app{grid-template-columns:1fr;position:relative}
+  
+  .sidebar{
+    position:fixed;
+    left:-280px;
+    top:0;
+    width:260px;
+    height:100vh;
+    z-index:150;
+    transition:left .3s ease;
+    box-shadow:4px 0 20px rgba(0,0,0,.3)
+  }
+  
+  .sidebar.mobile-open{left:0}
+  
+  .mobile-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.5);
+    z-index:100;
+    opacity:0;
+    transition:opacity .3s
+  }
+  
+  .mobile-overlay.active{display:block;opacity:1}
+  
+  .main{padding-top:60px}
+  
+  .topbar{padding:12px 15px;flex-wrap:wrap;gap:10px}
+  
+  .topbar-left h2{font-size:14px}
+  .topbar-left p{font-size:11px}
+  
+  .content{padding:15px}
+  
+  .card{padding:15px;margin-bottom:15px}
+  
+  .card-header{flex-direction:column;align-items:flex-start;gap:12px}
+  
+  .programs-grid{grid-template-columns:1fr}
+  
+  .form-grid{grid-template-columns:1fr}
+  
+  .form-grid-3{grid-template-columns:1fr}
+  
+  .doc-grid{grid-template-columns:1fr}
+  
+  .crew-grid{grid-template-columns:1fr}
+  
+  .q-table{font-size:11px;display:block;overflow-x:auto;white-space:nowrap}
+  
+  .q-table th,.q-table td{padding:8px 6px;font-size:11px}
+  
+  .modal{max-width:95%;margin:20px;max-height:85vh}
+  
+  .modal-body{padding:15px}
+  
+  .modal-footer{padding:12px 15px;flex-wrap:wrap}
+  
+  .btn{font-size:12px;padding:0 12px;height:32px}
+  
+  .add-row{grid-template-columns:1fr;gap:12px}
+  
+  .social-login{grid-template-columns:1fr}
+  
+  .login-card{padding:24px 20px}
+  
+  .prog-selector-wrap{flex-direction:column;align-items:stretch}
+  
+  .date-chips{flex-direction:column}
+  
+  .program-card-actions{flex-direction:column;width:100%}
+  
+  .program-card-actions button{width:100%}
+  
+  .crew-card-actions{flex-direction:column;width:100%}
+  
+  .crew-card-actions button{width:100%}
+}
+
+/* Tablet Responsive */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .app{grid-template-columns:220px 1fr}
+  
+  .sidebar{width:220px}
+  
+  .sidebar-logo h1{font-size:12px}
+  
+  .nav-item{font-size:12px;padding:8px 10px}
+  
+  .programs-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+  
+  .content{padding:20px}
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .topbar-left h2{font-size:13px}
+  
+  .card-title{font-size:13px}
+  
+  .btn{font-size:11px;height:30px;padding:0 10px}
+  
+  .form-input{height:36px;font-size:12px}
+  
+  .form-label{font-size:11px}
+  
+  .modal{max-width:98%;margin:10px}
+  
+  .program-card-name{font-size:13px}
+  
+  .meta-row{font-size:11px}
+  
+  .doc-card-name{font-size:12px}
+  
+  .crew-name{font-size:13px}
+}
 .sidebar{background:var(--upsi-purple);display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.07);position:sticky;top:0;height:100vh}
 .sidebar-logo{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.07)}
 .sidebar-logo h1{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:.05em;text-transform:uppercase}
@@ -1570,10 +1702,9 @@ function generateSuratLantikan() {
   }
   
   // Format date for display
-  const dateObj = new Date(date);
   const formattedDate = formatDateMalay(date);
   
-  // Generate HTML content for the letter
+  // Generate HTML content for the letter following UPSI template
   let htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -1581,123 +1712,632 @@ function generateSuratLantikan() {
   <meta charset="UTF-8">
   <title>Surat Lantikan - ${selectedProgramForSL.name}</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
-    .header { text-align: right; margin-bottom: 30px; }
-    .title { text-align: center; font-weight: bold; margin: 30px 0; text-decoration: underline; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-    th { background-color: #f0f0f0; font-weight: bold; }
-    .signature { margin-top: 50px; }
+    @page { margin: 2cm; }
+    body { 
+      font-family: 'Times New Roman', serif; 
+      font-size: 12pt;
+      line-height: 1.5;
+      margin: 0;
+      padding: 20px;
+    }
+    .header-logo {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      border-bottom: 3px solid #672889;
+      padding-bottom: 10px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-box {
+      width: 80px;
+      height: 80px;
+      background: #672889;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    .upsi-text {
+      font-size: 10pt;
+      line-height: 1.2;
+    }
+    .pusat-kebudayaan {
+      background: #672889;
+      color: white;
+      padding: 2px 10px;
+      font-size: 9pt;
+      font-weight: bold;
+      margin-top: 5px;
+      display: inline-block;
+    }
+    .header-right {
+      text-align: right;
+      font-size: 8pt;
+      line-height: 1.3;
+    }
+    .ref-section {
+      margin: 20px 0 30px 0;
+      text-align: right;
+    }
+    .ref-section p {
+      margin: 3px 0;
+    }
+    .recipient {
+      margin-bottom: 30px;
+    }
+    .recipient p {
+      margin: 2px 0;
+    }
+    .greeting {
+      margin: 20px 0;
+      font-style: italic;
+    }
+    .salutation {
+      margin-bottom: 15px;
+    }
+    .subject {
+      text-align: center;
+      font-weight: bold;
+      text-decoration: underline;
+      margin: 30px 0;
+      font-size: 13pt;
+    }
+    .content {
+      text-align: justify;
+      margin: 15px 0;
+    }
+    .indent {
+      text-indent: 1cm;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    table, th, td {
+      border: 1px solid #000;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+    .closing {
+      margin-top: 30px;
+      text-align: center;
+      font-weight: bold;
+      line-height: 1.8;
+    }
+    .signature-section {
+      margin-top: 50px;
+    }
+    .signature-text {
+      text-align: center;
+      font-style: italic;
+    }
+    .signer {
+      text-align: center;
+      margin-top: 80px;
+      font-weight: bold;
+    }
+    .signer-name {
+      text-decoration: underline;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 10pt;
+    }
+    .payment-table {
+      margin-top: 30px;
+    }
+    .payment-table td {
+      padding: 5px 10px;
+    }
+    .total-row {
+      font-weight: bold;
+      background-color: #f9f9f9;
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <p><strong>Rujukan Kami:</strong> UPS/HEP/JBUD/600Y ( )</p>
-    <p><strong>Tarikh:</strong> ${formattedDate}</p>
-    <p><strong>Tarikh (Hijrah):</strong> ${hijriDate}</p>
+  <!-- Header with UPSI Logo -->
+  <div class="header-logo">
+    <div class="header-left">
+      <div class="logo-box">UPSI</div>
+      <div>
+        <div class="upsi-text">
+          <strong>UNIVERSITI</strong><br>
+          <strong>PENDIDIKAN</strong><br>
+          <strong>SULTAN IDRIS</strong>
+        </div>
+        <div class="pusat-kebudayaan">PUSAT KEBUDAYAAN</div>
+      </div>
+    </div>
+    <div class="header-right">
+      35900 TANJONG MALIM<br>
+      PERAK DARUL RIDZUAN, MALAYSIA<br>
+      <br>
+      TEL : +603 450 6000<br>
+      FAKS : +603 4524778<br>
+      E-MEL : pusat_kebudayaan@upsi.edu.my
+    </div>
   </div>
-  
-  <p>Senarai Seperti di Lampiran</p>
-  
-  <p><strong>Assalamualaikum warahmatullahi wabarakatuh</strong></p>
-  
-  <p>Saudara/i,</p>
-  
-  <div class="title">LANTIKAN SEBAGAI KREW TEKNIKAL BAGI NAMA PROGRAM</div>
-  
-  <p>Saya dengan segala hormatnya merujuk kepada perkara di atas.</p>
-  
-  <p>2. Sukacita dimaklumkan saudara/i dilantik menjadi krew teknikal tersebut yang akan bertanggung jawab PILIH TEMPAT, UPSI. Butiran tugas adalah seperti berikut:</p>
-  
+
+  <!-- Reference Section (Top Right) -->
+  <div class="ref-section">
+    <p><strong>Ruj. Kami :</strong> UPS/HEP/JBUD/600Y ( )</p>
+    <p><strong>Tarikh :</strong> ${formattedDate}</p>
+    <p style="direction: rtl; text-align: right;">${hijriDate} : خيراهـ</p>
+  </div>
+
+  <!-- Recipient -->
+  <div class="recipient">
+    <p><strong>Senarai Nama</strong></p>
+  </div>
+
+  <!-- Greeting -->
+  <div class="greeting">
+    <strong>السلام عليكم ورحمة الله وبركاته</strong>
+  </div>
+
+  <div class="salutation">
+    Saudara/i,
+  </div>
+
+  <!-- Subject -->
+  <div class="subject">
+    LANTIKAN SEBAGAI KREW TEKNIKAL BAGI NAMA PROGRAM
+  </div>
+
+  <!-- Content Paragraph 1 -->
+  <div class="content indent">
+    Saya dengan segala hormatnya merujuk kepada perkara di atas.
+  </div>
+
+  <!-- Content Paragraph 2 -->
+  <div class="content">
+    2. <span style="margin-left: 15px;">Sukacita dimaklumkan saudara/i dilantik menjadi krew teknikal tersebut yang akan bertanggungjawab di <strong>PILIH TEMPAT, UPSI</strong>. Butiran tugas adalah seperti berikut:</span>
+  </div>
+
+  <!-- Program Details Table -->
   <table>
     <tr>
-      <th>Tarikh Pemasangan</th>
-      <td>${selectedProgramForSL.installDate || '-'}</td>
+      <td style="width: 40%;"><strong>Tarikh Pemasangan</strong></td>
+      <td>${selectedProgramForSL.installDate || '-'} ${selectedProgramForSL.installDay ? '(' + selectedProgramForSL.installDay + ')' : ''}</td>
     </tr>
     <tr>
-      <th>Tarikh Program</th>
-      <td>${selectedProgramForSL.date || '-'}</td>
+      <td><strong>Tarikh Program</strong></td>
+      <td>${selectedProgramForSL.date || '-'} ${selectedProgramForSL.day ? '(' + selectedProgramForSL.day + ')' : ''}</td>
     </tr>
     <tr>
-      <th>Masa</th>
-      <td>${selectedProgramForSL.time || '08:00 am - 11:00 pm'}</td>
+      <td><strong>Masa</strong></td>
+      <td>${selectedProgramForSL.time || '08:00 am – 11:00 pm'}</td>
     </tr>
   </table>
-  
-  <p>3. Segala perbelanjaan dan kerjasama saudara/i amat dihargai dan dihadiahi dengan upaya sebanyak <strong>RM ${grandTotal}</strong> akan dibuat mengikut Kadar Bayaran sebenar dan akan dibantu dengan upaya tenaga kasih, selamat.</p>
-  
-  <p><strong>"MALAYSIA MADANI"</strong><br>
-  <strong>"BERKHIDMAT UNTUK NEGARA"</strong><br>
-  <strong>"PENERAJU KECEMERLANGAN PENDIDIKAN"</strong></p>
-  
-  <p>Sekian, terima kasih.</p>
-  
-  <div class="signature">
-    <p><strong>"Saya yang menjalankan amanah"</strong></p>
-    <br><br>
-    <p><strong>(MUHAMMAD FAKRULLAH BIN FARROK)</strong><br>
-    Pegawai Kebudayaan</p>
-    <p>s.k. - Fail</p>
+
+  <!-- Content Paragraph 3 -->
+  <div class="content">
+    3. <span style="margin-left: 15px;">Segala perbelanjaan dan kerjasama saudara/i amat dihargai dan dihadiahi dengan upaya rentas kasih, selamat.</span>
   </div>
-  
-  <hr style="margin-top: 50px;">
-  
-  <h3>SENARAI NAMA KREW</h3>
-  <table>
+
+  <!-- Closing Statements -->
+  <div class="closing">
+    "MALAYSIA MADANI"<br>
+    "BERKHIDMAT UNTUK NEGARA"<br>
+    "PENERAJU KECEMERLANGAN PENDIDIKAN"
+  </div>
+
+  <!-- Closing Sentence -->
+  <div class="content">
+    Saya yang menjalankan amanah.
+  </div>
+
+  <!-- Signature Section -->
+  <div class="signature-section">
+    <div class="signature-text">
+      Saya yang menjalankan amanah,
+    </div>
+    <div class="signer">
+      <div style="height: 60px;"></div>
+      <div class="signer-name">(MUHAMMAD FAKRULLAH BIN FARROK)</div>
+      <div>Pegawai Kebudayaan</div>
+    </div>
+  </div>
+
+  <!-- Footer Note -->
+  <div class="footer">
+    s.k. - Fail
+  </div>
+
+  <!-- Page Break for Attachment -->
+  <div style="page-break-before: always;"></div>
+
+  <!-- LAMPIRAN: BORANG BAYARAN -->
+  <div class="header-logo">
+    <div class="header-left">
+      <div class="logo-box">UPSI</div>
+      <div>
+        <div class="upsi-text">
+          <strong>UNIVERSITI</strong><br>
+          <strong>PENDIDIKAN</strong><br>
+          <strong>SULTAN IDRIS</strong>
+        </div>
+        <div class="pusat-kebudayaan">PUSAT KEBUDAYAAN</div>
+      </div>
+    </div>
+    <div class="header-right">
+      35900 TANJONG MALIM<br>
+      PERAK DARUL RIDZUAN, MALAYSIA<br>
+      <br>
+      TEL : +603 450 6000<br>
+      FAKS : +603 4524778<br>
+      E-MEL : pusat_kebudayaan@upsi.edu.my
+    </div>
+  </div>
+
+  <div style="text-align: center; margin: 30px 0;">
+    <strong style="text-decoration: underline;">
+      BORANG BAYARAN KREW TEKNIKAL & KHIDMAT PERSEMBAHAN PELAJAR PUSAT KEBUDAYAAN
+    </strong>
+  </div>
+
+  <div style="margin: 20px 0;">
+    <p><strong>Nama Program: ${selectedProgramForSL.name}</strong></p>
+    <p><strong>Tarikh Program: ${selectedProgramForSL.date || '-'}</strong></p>
+  </div>
+
+  <!-- Payment Details Table -->
+  <table style="margin-top: 20px;">
+    <tr style="background-color: #f0f0f0;">
+      <td colspan="2" style="text-align: center;"><strong>Tandakan (/) yang berkaitan di bawah:</strong></td>
+    </tr>
+    <tr>
+      <td style="width: 50%;"><strong>Bayaran Krew Teknikal (Pelajar)</strong></td>
+      <td style="text-align: center;">${payStudent || 'RM 150'}</td>
+    </tr>
+    <tr>
+      <td><strong>Bayaran Krew Teknikal (Luar)</strong></td>
+      <td style="text-align: center;">${payExternal || 'RM 150'}</td>
+    </tr>
+    <tr>
+      <td><strong>Bayaran Khidmat Persembahan Pelajar Cemerlang / Pelajar Cemerlang / Persembahan</strong></td>
+      <td style="text-align: center;">${payPerformance || 'RM 150'}</td>
+    </tr>
+  </table>
+
+  <!-- Crew Members Table -->
+  <table style="margin-top: 30px;">
     <thead>
       <tr>
-        <th>Bil</th>
-        <th>Nama</th>
-        <th>No. Matrik (Pelajar) / No. Kad Pengenalan (Krew Luar)</th>
-        <th>No. Akaun Bank</th>
+        <th style="width: 5%;">Bil</th>
+        <th style="width: 35%;">Nama</th>
+        <th style="width: 30%;">No. Matrik (pelajar)/ No. Kad Pengenalan (Krew Luar)</th>
+        <th style="width: 30%;">No. Akaun Bank</th>
       </tr>
     </thead>
     <tbody>
 `;
 
-  // Add crew members to the table
+  // Add crew members
   selectedCrewForSL.forEach((crew, index) => {
     htmlContent += `
       <tr>
-        <td>${index + 1}</td>
+        <td style="text-align: center;">${index + 1}</td>
         <td>${crew.name}</td>
-        <td>${crew.ic}</td>
-        <td>${crew.bank_account}</td>
+        <td style="text-align: center;">${crew.ic}</td>
+        <td style="text-align: center;">${crew.bank_account}</td>
       </tr>
     `;
   });
-  
+
   htmlContent += `
     </tbody>
   </table>
-  
-  <div style="margin-top: 30px;">
-    <p><strong>Maklumat Bayaran:</strong></p>
-    <ul>
-      <li>Bayaran Krew Teknikal (Pelajar): ${payStudent}</li>
-      <li>Bayaran Krew Teknikal (Luar): ${payExternal}</li>
-      <li>Bayaran Khidmat Persembahan: ${payPerformance}</li>
-      <li>Jumlah Hari: ${totalDays}</li>
-      <li><strong>Jumlah Keseluruhan: RM ${grandTotal}</strong></li>
-    </ul>
+
+  <!-- Total Calculation -->
+  <table class="payment-table">
+    <tr>
+      <td style="width: 70%; text-align: right;"><strong>Kadar Bayaran Seorang (sehari) (RM)</strong></td>
+      <td style="width: 10%; text-align: center;">x</td>
+      <td style="width: 10%; text-align: center;">1</td>
+      <td style="width: 10%; text-align: center;">x</td>
+      <td style="width: 10%; text-align: center;">1</td>
+      <td style="width: 10%; text-align: center;">=</td>
+      <td style="width: 20%; text-align: center;">150</td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="6" style="text-align: right;"><strong>Jumlah Hari</strong></td>
+      <td style="text-align: center;"><strong>x ${totalDays}</strong></td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="6" style="text-align: right;"><strong>Jumlah Orang</strong></td>
+      <td style="text-align: center;"><strong>x ${selectedCrewForSL.length}</strong></td>
+    </tr>
+    <tr class="total-row" style="background-color: #e0e0e0;">
+      <td colspan="6" style="text-align: right; font-size: 14pt;"><strong>Jumlah Keseluruhan (RM)</strong></td>
+      <td style="text-align: center; font-size: 14pt;"><strong>${grandTotal}</strong></td>
+    </tr>
+  </table>
+
+  <!-- Signature Sections -->
+  <div style="display: flex; justify-content: space-between; margin-top: 80px;">
+    <div style="width: 45%; text-align: center;">
+      <div style="border-top: 2px dotted #000; padding-top: 10px; margin-top: 60px;">
+        (Cop Pegawai)/ Tarikh:
+      </div>
+    </div>
+    <div style="width: 45%; text-align: center;">
+      <div style="border-top: 2px dotted #000; padding-top: 10px; margin-top: 60px;">
+        (Cop Pegawai)/ Tarikh:
+      </div>
+    </div>
   </div>
-  
+
+  <div style="margin-top: 40px; font-size: 10pt;">
+    <p><strong>Sila lengkap bersama-sama borang ini:</strong></p>
+    <p><em>*Krew Lantikan (Krew):</em> Borang lampiran beserta slip pengenalan/kad matrik dan salin halaman buku bank/kad debit.</p>
+    <p><em>*Pelajar Cemerlang/Persembahan:</em> Borang lampiran beserta permohohan pelajar kepada nama peneraju bakat setiap persembahan Pusat Kebudayaan.</p>
+    <p style="margin-top: 20px;"><strong><em>** Notis: Tiada bayaran akan diberi kepada peserta yang tidak melengkapkan maklumat seperti yang tertera di atas.</em></strong></p>
+    <p><strong>Pusat Kebudayaan.</strong></p>
+  </div>
+
 </body>
 </html>
   `;
   
-  // Create a blob and download
-  const blob = new Blob([htmlContent], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `Surat_Lantikan_${selectedProgramForSL.name.replace(/[^a-z0-9]/gi, '_')}_${date}.html`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  
-  alert('Surat Lantikan telah dijana!\n\nProgram: ' + selectedProgramForSL.name + '\nJumlah Krew: ' + selectedCrewForSL.length + '\n\nFail HTML telah dimuat turun. Anda boleh membuka fail tersebut dan menyimpannya sebagai PDF atau DOCX.');
+  // Convert HTML to Word document using docx library
+  try {
+    const { Document, Paragraph, TextRun, Table, TableCell, TableRow, WidthType, AlignmentType, BorderStyle } = docx;
+    
+    // Create header paragraphs
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          // Header - UPSI
+          new Paragraph({
+            alignment: AlignmentType.LEFT,
+            children: [
+              new TextRun({
+                text: "UNIVERSITI PENDIDIKAN SULTAN IDRIS",
+                bold: true,
+                size: 24,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.LEFT,
+            children: [
+              new TextRun({
+                text: "PUSAT KEBUDAYAAN",
+                bold: true,
+                size: 20,
+              }),
+            ],
+          }),
+          new Paragraph({
+            text: "",
+            spacing: { after: 200 },
+          }),
+          
+          // Reference section (right aligned)
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({
+                text: "Ruj. Kami : UPS/HEP/JBUD/600Y ( )",
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({
+                text: "Tarikh : " + formattedDate,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({
+                text: hijriDate,
+              }),
+            ],
+            spacing: { after: 400 },
+          }),
+          
+          // Recipient
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Senarai Nama",
+                bold: true,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          
+          // Greeting
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Assalamualaikum warahmatullahi wabarakatuh",
+                italics: true,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          
+          new Paragraph({
+            text: "Saudara/i,",
+            spacing: { after: 200 },
+          }),
+          
+          // Subject
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: "LANTIKAN SEBAGAI KREW TEKNIKAL BAGI NAMA PROGRAM",
+                bold: true,
+                underline: {},
+              }),
+            ],
+            spacing: { before: 200, after: 200 },
+          }),
+          
+          // Content paragraph 1
+          new Paragraph({
+            text: "Saya dengan segala hormatnya merujuk kepada perkara di atas.",
+            spacing: { after: 200 },
+          }),
+          
+          // Content paragraph 2
+          new Paragraph({
+            text: "2. Sukacita dimaklumkan saudara/i dilantik menjadi krew teknikal tersebut yang akan bertanggungjawab di PILIH TEMPAT, UPSI. Butiran tugas adalah seperti berikut:",
+            spacing: { after: 200 },
+          }),
+          
+          // Program details table
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [new Paragraph({ text: "Tarikh Pemasangan", bold: true })],
+                    width: { size: 40, type: WidthType.PERCENTAGE },
+                  }),
+                  new TableCell({
+                    children: [new Paragraph({ text: (selectedProgramForSL.installDate || '-') + (selectedProgramForSL.installDay ? ' (' + selectedProgramForSL.installDay + ')' : '') })],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [new Paragraph({ text: "Tarikh Program", bold: true })],
+                  }),
+                  new TableCell({
+                    children: [new Paragraph({ text: (selectedProgramForSL.date || '-') + (selectedProgramForSL.day ? ' (' + selectedProgramForSL.day + ')' : '') })],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [new Paragraph({ text: "Masa", bold: true })],
+                  }),
+                  new TableCell({
+                    children: [new Paragraph({ text: selectedProgramForSL.time || '08:00 am – 11:00 pm' })],
+                  }),
+                ],
+              }),
+            ],
+          }),
+          
+          // Content paragraph 3
+          new Paragraph({
+            text: "3. Segala perbelanjaan dan kerjasama saudara/i amat dihargai dan dihadiahi dengan upaya rentas kasih, selamat.",
+            spacing: { before: 200, after: 200 },
+          }),
+          
+          // Closing statements
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: '"MALAYSIA MADANI"',
+                bold: true,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: '"BERKHIDMAT UNTUK NEGARA"',
+                bold: true,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: '"PENERAJU KECEMERLANGAN PENDIDIKAN"',
+                bold: true,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          
+          new Paragraph({
+            text: "Saya yang menjalankan amanah.",
+            spacing: { after: 400 },
+          }),
+          
+          // Signature
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            text: "",
+            spacing: { after: 800 },
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: "(MUHAMMAD FAKRULLAH BIN FARROK)",
+                bold: true,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            text: "Pegawai Kebudayaan",
+          }),
+          
+          new Paragraph({
+            text: "s.k. - Fail",
+            spacing: { before: 200 },
+          }),
+        ],
+      }],
+    });
+    
+    // Generate and download
+    docx.Packer.toBlob(doc).then(blob => {
+      saveAs(blob, `Surat_Lantikan_${selectedProgramForSL.name.replace(/[^a-z0-9]/gi, '_')}_${date}.docx`);
+      alert('Surat Lantikan telah dijana!\n\nProgram: ' + selectedProgramForSL.name + '\nJumlah Krew: ' + selectedCrewForSL.length + '\n\nFail Word (.docx) telah dimuat turun.');
+    });
+    
+  } catch (error) {
+    console.error('Error generating Word document:', error);
+    
+    // Fallback to HTML if Word generation fails
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Surat_Lantikan_${selectedProgramForSL.name.replace(/[^a-z0-9]/gi, '_')}_${date}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert('Word generation tidak tersedia. Fail HTML telah dimuat turun sebagai ganti.\n\nAnda boleh buka fail HTML dan save as Word document.');
+  }
 }
 </script>
 </body>
