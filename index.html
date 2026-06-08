@@ -6,8 +6,6 @@
 <title>Crew Generator — Pusat Kebudayaan UPSI</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -1931,7 +1929,7 @@ function generateSuratLantikan() {
 
   <!-- Subject -->
   <div class="subject">
-    LANTIKAN SEBAGAI KREW TEKNIKAL BAGI NAMA PROGRAM
+    LANTIKAN SEBAGAI KREW TEKNIKAL BAGI ${selectedProgramForSL.name.toUpperCase()}
   </div>
 
   <!-- Content Paragraph 1 -->
@@ -1941,7 +1939,7 @@ function generateSuratLantikan() {
 
   <!-- Content Paragraph 2 -->
   <div class="content">
-    2. <span style="margin-left: 15px;">Sukacita dimaklumkan saudara/i dilantik menjadi krew teknikal tersebut yang akan bertanggungjawab di <strong>PILIH TEMPAT, UPSI</strong>. Butiran tugas adalah seperti berikut:</span>
+    2. <span style="margin-left: 15px;">Sukacita dimaklumkan saudara/i dilantik menjadi krew teknikal tersebut yang akan bertanggungjawab di <strong>${selectedProgramForSL.venue || 'PILIH TEMPAT'}, UPSI</strong>. Butiran tugas adalah seperti berikut:</span>
   </div>
 
   <!-- Program Details Table -->
@@ -2130,249 +2128,45 @@ function generateSuratLantikan() {
 </html>
   `;
   
-  // Convert HTML to Word document using docx library
-  try {
-    const { Document, Paragraph, TextRun, Table, TableCell, TableRow, WidthType, AlignmentType, BorderStyle } = docx;
-    
-    // Create header paragraphs
-    const doc = new Document({
-      sections: [{
-        properties: {},
-        children: [
-          // Header - UPSI
-          new Paragraph({
-            alignment: AlignmentType.LEFT,
-            children: [
-              new TextRun({
-                text: "UNIVERSITI PENDIDIKAN SULTAN IDRIS",
-                bold: true,
-                size: 24,
-              }),
-            ],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.LEFT,
-            children: [
-              new TextRun({
-                text: "PUSAT KEBUDAYAAN",
-                bold: true,
-                size: 20,
-              }),
-            ],
-          }),
-          new Paragraph({
-            text: "",
-            spacing: { after: 200 },
-          }),
-          
-          // Reference section (right aligned)
-          new Paragraph({
-            alignment: AlignmentType.RIGHT,
-            children: [
-              new TextRun({
-                text: "Ruj. Kami : UPS/HEP/JBUD/600Y ( )",
-              }),
-            ],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.RIGHT,
-            children: [
-              new TextRun({
-                text: "Tarikh : " + formattedDate,
-              }),
-            ],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.RIGHT,
-            children: [
-              new TextRun({
-                text: hijriDate,
-              }),
-            ],
-            spacing: { after: 400 },
-          }),
-          
-          // Recipient
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: "Senarai Nama",
-                bold: true,
-              }),
-            ],
-            spacing: { after: 200 },
-          }),
-          
-          // Greeting
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: "Assalamualaikum warahmatullahi wabarakatuh",
-                italics: true,
-              }),
-            ],
-            spacing: { after: 200 },
-          }),
-          
-          new Paragraph({
-            text: "Saudara/i,",
-            spacing: { after: 200 },
-          }),
-          
-          // Subject
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new TextRun({
-                text: "LANTIKAN SEBAGAI KREW TEKNIKAL BAGI NAMA PROGRAM",
-                bold: true,
-                underline: {},
-              }),
-            ],
-            spacing: { before: 200, after: 200 },
-          }),
-          
-          // Content paragraph 1
-          new Paragraph({
-            text: "Saya dengan segala hormatnya merujuk kepada perkara di atas.",
-            spacing: { after: 200 },
-          }),
-          
-          // Content paragraph 2
-          new Paragraph({
-            text: "2. Sukacita dimaklumkan saudara/i dilantik menjadi krew teknikal tersebut yang akan bertanggungjawab di PILIH TEMPAT, UPSI. Butiran tugas adalah seperti berikut:",
-            spacing: { after: 200 },
-          }),
-          
-          // Program details table
-          new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            rows: [
-              new TableRow({
-                children: [
-                  new TableCell({
-                    children: [new Paragraph({ text: "Tarikh Pemasangan", bold: true })],
-                    width: { size: 40, type: WidthType.PERCENTAGE },
-                  }),
-                  new TableCell({
-                    children: [new Paragraph({ text: (selectedProgramForSL.installDate || '-') + (selectedProgramForSL.installDay ? ' (' + selectedProgramForSL.installDay + ')' : '') })],
-                  }),
-                ],
-              }),
-              new TableRow({
-                children: [
-                  new TableCell({
-                    children: [new Paragraph({ text: "Tarikh Program", bold: true })],
-                  }),
-                  new TableCell({
-                    children: [new Paragraph({ text: (selectedProgramForSL.date || '-') + (selectedProgramForSL.day ? ' (' + selectedProgramForSL.day + ')' : '') })],
-                  }),
-                ],
-              }),
-              new TableRow({
-                children: [
-                  new TableCell({
-                    children: [new Paragraph({ text: "Masa", bold: true })],
-                  }),
-                  new TableCell({
-                    children: [new Paragraph({ text: selectedProgramForSL.time || '08:00 am – 11:00 pm' })],
-                  }),
-                ],
-              }),
-            ],
-          }),
-          
-          // Content paragraph 3
-          new Paragraph({
-            text: "3. Segala perbelanjaan dan kerjasama saudara/i amat dihargai dan dihadiahi dengan upaya rentas kasih, selamat.",
-            spacing: { before: 200, after: 200 },
-          }),
-          
-          // Closing statements
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new TextRun({
-                text: '"MALAYSIA MADANI"',
-                bold: true,
-              }),
-            ],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new TextRun({
-                text: '"BERKHIDMAT UNTUK NEGARA"',
-                bold: true,
-              }),
-            ],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new TextRun({
-                text: '"PENERAJU KECEMERLANGAN PENDIDIKAN"',
-                bold: true,
-              }),
-            ],
-            spacing: { after: 200 },
-          }),
-          
-          new Paragraph({
-            text: "Saya yang menjalankan amanah.",
-            spacing: { after: 400 },
-          }),
-          
-          // Signature
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            text: "",
-            spacing: { after: 800 },
-          }),
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new TextRun({
-                text: "(MUHAMMAD FAKRULLAH BIN FARROK)",
-                bold: true,
-              }),
-            ],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            text: "Pegawai Kebudayaan",
-          }),
-          
-          new Paragraph({
-            text: "s.k. - Fail",
-            spacing: { before: 200 },
-          }),
-        ],
-      }],
-    });
-    
-    // Generate and download
-    docx.Packer.toBlob(doc).then(blob => {
-      saveAs(blob, `Surat_Lantikan_${selectedProgramForSL.name.replace(/[^a-z0-9]/gi, '_')}_${date}.docx`);
-      alert('Surat Lantikan telah dijana!\n\nProgram: ' + selectedProgramForSL.name + '\nJumlah Krew: ' + selectedCrewForSL.length + '\n\nFail Word (.docx) telah dimuat turun.');
-    });
-    
-  } catch (error) {
-    console.error('Error generating Word document:', error);
-    
-    // Fallback to HTML if Word generation fails
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Surat_Lantikan_${selectedProgramForSL.name.replace(/[^a-z0-9]/gi, '_')}_${date}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    alert('Word generation tidak tersedia. Fail HTML telah dimuat turun sebagai ganti.\n\nAnda boleh buka fail HTML dan save as Word document.');
-  }
+  // Generate as Word document (.doc format that MS Word can open)
+  const wordContent = `
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="UTF-8">
+<title>Surat Lantikan - ${selectedProgramForSL.name}</title>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+<w:Zoom>100</w:Zoom>
+<w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page { size: A4; margin: 2cm 2.5cm 2cm 2.5cm; }
+  body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; }
+  table { border-collapse: collapse; }
+  .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+${htmlContent.match(/<body>([\s\S]*)<\/body>/)[1]}
+</body>
+</html>`;
+
+  // Create blob as Word document
+  const blob = new Blob(['\\ufeff', wordContent], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Surat_Lantikan_' + selectedProgramForSL.name.replace(/[^a-z0-9]/gi, '_') + '_' + date + '.doc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  alert('Surat Lantikan telah dijana!\\n\\nProgram: ' + selectedProgramForSL.name + '\\nJumlah Krew: ' + selectedCrewForSL.length + '\\n\\nFail Word (.doc) telah dimuat turun. Buka dengan Microsoft Word.');
 }
 </script>
 </body>
