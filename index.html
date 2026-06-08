@@ -23,7 +23,15 @@
   --shadow-lg:0 8px 24px rgba(103,40,137,.12);
 }
 body{font-family:'DM Sans',sans-serif;background:var(--upsi-purple);min-height:100vh;color:var(--text);overflow-x:hidden}
-.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh;transition:grid-template-columns .3s ease}
+.app.sidebar-collapsed{grid-template-columns:0 1fr}
+.app.sidebar-collapsed .sidebar{transform:translateX(-100%)}
+.mobile-overlay{display:none}
+
+/* Sidebar toggle button (works on desktop + mobile) */
+.sidebar-toggle{flex-shrink:0;width:38px;height:38px;border:1px solid var(--border);background:var(--surface);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .15s;margin-right:12px}
+.sidebar-toggle:hover{background:var(--upsi-purple);color:#fff;border-color:var(--upsi-purple)}
+.sidebar-toggle svg{width:20px;height:20px}
 
 /* Mobile Menu Button */
 .mobile-menu-btn{display:none;position:fixed;top:15px;left:15px;z-index:200;width:40px;height:40px;background:var(--upsi-gold);border:none;border-radius:8px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
@@ -36,20 +44,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--upsi-purple);min-height:1
 @media (max-width: 768px) {
   .mobile-menu-btn{display:flex}
   
-  .app{grid-template-columns:1fr;position:relative}
+  #app{grid-template-columns:1fr;position:relative}
   
-  .sidebar{
+  #app .sidebar{
     position:fixed;
-    left:-280px;
+    left:0;
     top:0;
     width:260px;
     height:100vh;
     z-index:150;
-    transition:left .3s ease;
+    transform:translateX(-100%);
+    transition:transform .3s ease;
     box-shadow:4px 0 20px rgba(0,0,0,.3)
   }
   
-  .sidebar.mobile-open{left:0}
+  #app .sidebar.mobile-open{transform:translateX(0)}
   
   .mobile-overlay{
     display:none;
@@ -63,7 +72,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--upsi-purple);min-height:1
   
   .mobile-overlay.active{display:block;opacity:1}
   
-  .main{padding-top:60px}
+  .main{padding-top:0}
   
   .topbar{padding:12px 15px;flex-wrap:wrap;gap:10px}
   
@@ -154,7 +163,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--upsi-purple);min-height:1
   
   .crew-name{font-size:13px}
 }
-.sidebar{background:var(--upsi-purple);display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.07);position:sticky;top:0;height:100vh}
+.sidebar{background:var(--upsi-purple);display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.07);position:sticky;top:0;height:100vh;transition:transform .3s ease;overflow:hidden}
 .sidebar-logo{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.07)}
 .sidebar-logo h1{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:.05em;text-transform:uppercase}
 .sidebar-logo p{font-size:11px;color:rgba(255,255,255,.3);margin-top:3px}
@@ -294,8 +303,9 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
 </style>
 </head>
 <body>
-<div class="app">
-<aside class="sidebar">
+<div class="mobile-overlay" id="mobile-overlay" onclick="closeSidebarMobile()"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-logo"><h1>Crew Generator</h1><p>UPSI Management</p></div>
   <nav class="sidebar-nav">
     <div class="nav-label">Menu</div>
@@ -311,7 +321,12 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
 </aside>
 <main class="main">
   <div class="topbar">
-    <div class="topbar-left"><h2 id="page-title">Programs</h2><p id="page-sub">Urus senarai program</p></div>
+    <div class="topbar-left" style="display:flex;align-items:center">
+      <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Sembunyi/Papar Menu">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div><h2 id="page-title">Programs</h2><p id="page-sub">Urus senarai program</p></div>
+    </div>
     <div id="topbar-actions"></div>
   </div>
   <div class="content">
@@ -610,6 +625,24 @@ const PAGE_META = {
   crew: { title: 'Crew', sub: 'Pengurusan krew teknikal' },
 };
 
+function toggleSidebar() {
+  if (window.innerWidth <= 768) {
+    // Mobile: slide sidebar in/out with overlay
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+    const isOpen = sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active', isOpen);
+  } else {
+    // Desktop: collapse/expand sidebar
+    document.getElementById('app').classList.toggle('sidebar-collapsed');
+  }
+}
+
+function closeSidebarMobile() {
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('mobile-overlay').classList.remove('active');
+}
+
 function navigate(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -626,6 +659,8 @@ function navigate(page) {
   if (page === 'programs') renderPrograms();
   if (page === 'documents') renderDocuments();
   if (page === 'crew') renderCrew();
+  // Auto-close sidebar on mobile after navigating
+  if (window.innerWidth <= 768) closeSidebarMobile();
 }
 
 function savePrograms() {
