@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crew Generator — Pusat Kebudayaan UPSI</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -19,8 +22,138 @@
   --shadow:0 1px 3px rgba(103,40,137,.08),0 4px 12px rgba(103,40,137,.06);
   --shadow-lg:0 8px 24px rgba(103,40,137,.12);
 }
-body{font-family:'DM Sans',sans-serif;background:var(--upsi-purple);min-height:100vh;color:var(--text)}
+body{font-family:'DM Sans',sans-serif;background:var(--upsi-purple);min-height:100vh;color:var(--text);overflow-x:hidden}
 .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* Mobile Menu Button */
+.mobile-menu-btn{display:none;position:fixed;top:15px;left:15px;z-index:200;width:40px;height:40px;background:var(--upsi-gold);border:none;border-radius:8px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.mobile-menu-btn span{width:22px;height:3px;background:#fff;border-radius:2px;transition:all .3s}
+.mobile-menu-btn.active span:nth-child(1){transform:rotate(45deg) translate(6px,6px)}
+.mobile-menu-btn.active span:nth-child(2){opacity:0}
+.mobile-menu-btn.active span:nth-child(3){transform:rotate(-45deg) translate(6px,-6px)}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .mobile-menu-btn{display:flex}
+  
+  .app{grid-template-columns:1fr;position:relative}
+  
+  .sidebar{
+    position:fixed;
+    left:-280px;
+    top:0;
+    width:260px;
+    height:100vh;
+    z-index:150;
+    transition:left .3s ease;
+    box-shadow:4px 0 20px rgba(0,0,0,.3)
+  }
+  
+  .sidebar.mobile-open{left:0}
+  
+  .mobile-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.5);
+    z-index:100;
+    opacity:0;
+    transition:opacity .3s
+  }
+  
+  .mobile-overlay.active{display:block;opacity:1}
+  
+  .main{padding-top:60px}
+  
+  .topbar{padding:12px 15px;flex-wrap:wrap;gap:10px}
+  
+  .topbar-left h2{font-size:14px}
+  .topbar-left p{font-size:11px}
+  
+  .content{padding:15px}
+  
+  .card{padding:15px;margin-bottom:15px}
+  
+  .card-header{flex-direction:column;align-items:flex-start;gap:12px}
+  
+  .programs-grid{grid-template-columns:1fr}
+  
+  .form-grid{grid-template-columns:1fr}
+  
+  .form-grid-3{grid-template-columns:1fr}
+  
+  .doc-grid{grid-template-columns:1fr}
+  
+  .crew-grid{grid-template-columns:1fr}
+  
+  .q-table{font-size:11px;display:block;overflow-x:auto;white-space:nowrap}
+  
+  .q-table th,.q-table td{padding:8px 6px;font-size:11px}
+  
+  .modal{max-width:95%;margin:20px;max-height:85vh}
+  
+  .modal-body{padding:15px}
+  
+  .modal-footer{padding:12px 15px;flex-wrap:wrap}
+  
+  .btn{font-size:12px;padding:0 12px;height:32px}
+  
+  .add-row{grid-template-columns:1fr;gap:12px}
+  
+  .social-login{grid-template-columns:1fr}
+  
+  .login-card{padding:24px 20px}
+  
+  .prog-selector-wrap{flex-direction:column;align-items:stretch}
+  
+  .date-chips{flex-direction:column}
+  
+  .program-card-actions{flex-direction:column;width:100%}
+  
+  .program-card-actions button{width:100%}
+  
+  .crew-card-actions{flex-direction:column;width:100%}
+  
+  .crew-card-actions button{width:100%}
+}
+
+/* Tablet Responsive */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .app{grid-template-columns:220px 1fr}
+  
+  .sidebar{width:220px}
+  
+  .sidebar-logo h1{font-size:12px}
+  
+  .nav-item{font-size:12px;padding:8px 10px}
+  
+  .programs-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+  
+  .content{padding:20px}
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .topbar-left h2{font-size:13px}
+  
+  .card-title{font-size:13px}
+  
+  .btn{font-size:11px;height:30px;padding:0 10px}
+  
+  .form-input{height:36px;font-size:12px}
+  
+  .form-label{font-size:11px}
+  
+  .modal{max-width:98%;margin:10px}
+  
+  .program-card-name{font-size:13px}
+  
+  .meta-row{font-size:11px}
+  
+  .doc-card-name{font-size:12px}
+  
+  .crew-name{font-size:13px}
+}
 .sidebar{background:var(--upsi-purple);display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.07);position:sticky;top:0;height:100vh}
 .sidebar-logo{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.07)}
 .sidebar-logo h1{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:.05em;text-transform:uppercase}
@@ -171,6 +304,7 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
     <div class="nav-item" onclick="navigate('crew')" id="nav-crew"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Crew</div>
     <div class="nav-item" onclick="navigate('documents')" id="nav-documents"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Documents</div>
     <div class="nav-item" onclick="navigate('sebutharga')" id="nav-sebutharga"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>Sebut Harga</div>
+    <div class="nav-item" onclick="navigate('suratlantikan')" id="nav-suratlantikan"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Surat Lantikan</div>
     <div class="nav-item" id="logout-btn"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</div>
   </nav>
   <div class="sidebar-bottom"><div class="user-chip"><div class="user-avatar">PK</div><div><div class="user-name">Pusat Kebudayaan</div><div class="user-role">UPSI</div></div></div></div>
@@ -267,19 +401,133 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
       <div class="card">
         <div class="card-header">
           <div class="card-title"><div class="card-title-bar"></div>Senarai Krew<span class="count-badge" id="crew-count-badge" style="display:none">0</span></div>
-          <button class="btn btn-primary" onclick="openAddCrew()">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Tambah Krew
-          </button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline" onclick="downloadExcelTemplate()" style="border-color:var(--upsi-gold);color:var(--upsi-gold-dark)">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Muat Turun Template
+            </button>
+            <button class="btn btn-outline" onclick="document.getElementById('excel-upload').click()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              Import Excel
+            </button>
+            <button class="btn btn-primary" onclick="openAddCrew()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Tambah Krew
+            </button>
+          </div>
         </div>
+        <input type="file" id="excel-upload" accept=".xlsx,.xls" style="display:none" onchange="importCrewFromExcel(event)" />
         <div id="crew-empty" class="empty-state">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <h3>Tiada krew lagi</h3>
-          <p>Klik "Tambah Krew" untuk mendaftar ahli krew teknikal.</p>
+          <p>Klik "Tambah Krew" untuk mendaftar secara manual, atau "Muat Turun Template" untuk format Excel kemudian "Import Excel" untuk import data pukal.</p>
         </div>
         <div class="crew-grid" id="crew-grid" style="display:none"></div>
       </div>
     </div>
+
+    <!-- SURAT LANTIKAN PAGE -->
+    <div class="page" id="page-suratlantikan">
+      <div class="prog-selector-wrap">
+        <div class="prog-selector-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg></div>
+        <div style="flex:1">
+          <div class="prog-selector-label">Pilih Program</div>
+          <select class="form-input prog-selector-select" id="prog-selector-sl" onchange="onProgramSelectedSL()">
+            <option value="">— Pilih program untuk surat lantikan —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-bar"></div>Maklumat Surat Lantikan</div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Tarikh Surat (Masihi)</label>
+            <input class="form-input" id="sl-date" type="date" style="padding-right:12px" onchange="updateHijriDate()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tarikh Surat (Hijrah)</label>
+            <input class="form-input" id="sl-date-hijri" type="text" placeholder="8 Zulhijjah 1446" readonly style="background:var(--surface2)" />
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Nama Program</label>
+            <input class="form-input" id="sl-program-name" type="text" readonly placeholder="Pilih program di atas untuk auto-isi" style="background:var(--surface2);font-weight:600" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-bar"></div>Senarai Krew Teknikal<span class="count-badge" id="sl-crew-count" style="display:none">0</span></div>
+          <button class="btn btn-primary" onclick="openAddCrewToSL()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Tambah Krew
+          </button>
+        </div>
+        <div id="sl-crew-empty" class="empty-state">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <h3>Tiada krew dipilih</h3>
+          <p>Klik "Tambah Krew" untuk memilih krew teknikal untuk surat lantikan ini.</p>
+        </div>
+        <div id="sl-crew-table-wrap" style="display:none">
+          <table class="q-table">
+            <thead>
+              <tr>
+                <th>Bil</th>
+                <th>Nama</th>
+                <th>No. Matrik (Pelajar) / No. Kad Pengenalan (Krew Luar / Pelajar Cemerlang / Persembahan)</th>
+                <th>No. Akaun Bank</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="sl-crew-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-bar"></div>Bayaran Krew & Khidmat Persembahan</div>
+        </div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label">Bayaran Krew Teknikal (Pelajar)</label>
+            <input class="form-input" id="sl-pay-student" type="text" placeholder="RM 150" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bayaran Krew Teknikal (Luar)</label>
+            <input class="form-input" id="sl-pay-external" type="text" placeholder="RM 150" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bayaran Khidmat Persembahan / Pelajar Cemerlang</label>
+            <input class="form-input" id="sl-pay-performance" type="text" placeholder="RM 150" />
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="form-group">
+            <label class="form-label">Jumlah Hari (Bayaran Krew)</label>
+            <input class="form-input" id="sl-total-days" type="number" value="1" min="1" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jumlah Keseluruhan</label>
+            <input class="form-input" id="sl-grand-total" type="text" placeholder="150" readonly style="font-weight:600;color:var(--upsi-purple)" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--surface2);border:2px dashed var(--border2)">
+        <div style="text-align:center;padding:20px">
+          <button class="btn btn-dark" onclick="generateSuratLantikan()" style="font-size:15px;height:44px;padding:0 32px">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Jana Surat Lantikan
+          </button>
+          <p style="font-size:12px;color:var(--text3);margin-top:12px">Surat akan dijana dalam format DOCX</p>
+        </div>
+      </div>
+    </div>
+
     <!-- PLACEHOLDER PAGE -->
     <div class="page" id="page-placeholder">
       <div class="card"><div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><h3 id="placeholder-title">Halaman ini akan datang</h3><p>Pilih menu lain di sebelah kiri.</p></div></div>
@@ -311,9 +559,9 @@ select.form-input{cursor:pointer;appearance:none;background-image:url("data:imag
       <div class="modal-section">
         <div class="modal-section-title">Tarikh</div>
         <div class="form-grid">
-          <div class="form-group"><label class="form-label">Tarikh Pemasangan *</label><input class="form-input" id="m-prog-install-date" placeholder="cth. 13 Oktober 2025"/></div>
+          <div class="form-group"><label class="form-label">Tarikh Pemasangan *</label><input class="form-input" id="m-prog-install-date" type="date" style="padding-right:12px"/></div>
           <div class="form-group"><label class="form-label">Hari Pemasangan</label><select class="form-input" id="m-prog-install-day"><option value="">— Pilih Hari —</option><option>Ahad</option><option>Isnin</option><option>Selasa</option><option>Rabu</option><option>Khamis</option><option>Jumaat</option><option>Sabtu</option></select></div>
-          <div class="form-group"><label class="form-label">Tarikh Program *</label><input class="form-input" id="m-prog-date" placeholder="cth. 14 Oktober 2025"/></div>
+          <div class="form-group"><label class="form-label">Tarikh Program *</label><input class="form-input" id="m-prog-date" type="date" style="padding-right:12px"/></div>
           <div class="form-group"><label class="form-label">Hari Program</label><select class="form-input" id="m-prog-day"><option value="">— Pilih Hari —</option><option>Ahad</option><option>Isnin</option><option>Selasa</option><option>Rabu</option><option>Khamis</option><option>Jumaat</option><option>Sabtu</option></select></div>
         </div>
       </div>
@@ -374,6 +622,7 @@ function navigate(page) {
   if (mainPage) { mainPage.classList.add('active'); }
   else { document.getElementById('placeholder-title').textContent = meta.title; document.getElementById('page-placeholder').classList.add('active'); }
   if (page === 'sebutharga') refreshProgramSelector();
+  if (page === 'suratlantikan') initSuratLantikan();
   if (page === 'programs') renderPrograms();
   if (page === 'documents') renderDocuments();
   if (page === 'crew') renderCrew();
@@ -1022,11 +1271,25 @@ navigate('programs');
     <div class="modal-footer"><button class="btn btn-outline" onclick="closeDeleteCrewModal()">Batal</button><button class="btn" style="background:var(--red);color:#fff" onclick="confirmDeleteCrew()">Ya, Padam</button></div>
   </div>
 </div>
-</body>
-</html>
 
+<!-- MODAL: SELECT CREW FOR SURAT LANTIKAN -->
+<div class="modal-overlay" id="select-crew-modal" onclick="closeSelectCrewModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Pilih Krew untuk Surat Lantikan</div>
+      <button class="modal-close" onclick="closeSelectCrewModal()"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div id="crew-selection-list" style="max-height:400px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeSelectCrewModal()">Batal</button>
+      <button class="btn btn-primary" onclick="addSelectedCrewToSL()">Tambah Krew Terpilih</button>
+    </div>
+  </div>
+</div>
 
-
+<script>
 // === LOGIN PROTECTION ===
 // Check if user is logged in
 if (sessionStorage.getItem('isLoggedIn') !== 'true') {
@@ -1039,6 +1302,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       if (confirm('Adakah anda pasti ingin log keluar?')) {
         sessionStorage.removeItem('isLoggedIn');
         sessionStorage.removeItem('userEmail');
@@ -1056,4 +1320,1025 @@ document.addEventListener('DOMContentLoaded', function() {
       userNameEl.textContent = userName;
     }
   }
+
+  // Initialize Surat Lantikan
+  initSuratLantikan();
+  
+  // Add date change listeners for auto day selection
+  const installDateInput = document.getElementById('m-prog-install-date');
+  const progDateInput = document.getElementById('m-prog-date');
+  
+  if (installDateInput) {
+    installDateInput.addEventListener('change', function() {
+      autoSelectDay(this.value, 'm-prog-install-day');
+    });
+  }
+  
+  if (progDateInput) {
+    progDateInput.addEventListener('change', function() {
+      autoSelectDay(this.value, 'm-prog-day');
+    });
+  }
 });
+
+// Auto select day of week based on date
+function autoSelectDay(dateStr, selectId) {
+  if (!dateStr) return;
+  
+  const date = new Date(dateStr);
+  const days = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+  const dayName = days[date.getDay()];
+  
+  const selectEl = document.getElementById(selectId);
+  if (selectEl) {
+    selectEl.value = dayName;
+  }
+}
+
+// Format date to display format (e.g., "14 Oktober 2025")
+function formatDateMalay(dateStr) {
+  if (!dateStr) return '';
+  
+  const date = new Date(dateStr);
+  const months = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 
+                  'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+  
+  return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+}
+
+// Convert Gregorian date to Hijri date (Islamic calendar)
+function gregorianToHijri(dateStr) {
+  if (!dateStr) return '';
+  
+  const date = new Date(dateStr);
+  
+  // Using Kuwaiti algorithm for Hijri conversion
+  // This is an approximation - for exact dates, you'd use a proper Islamic calendar API
+  const gYear = date.getFullYear();
+  const gMonth = date.getMonth() + 1;
+  const gDay = date.getDate();
+  
+  let wd;
+  let intPart = function(floatNum) {
+    return floatNum < 0 ? Math.ceil(floatNum) : Math.floor(floatNum);
+  };
+  
+  if ((gYear > 1582) || ((gYear == 1582) && (gMonth > 10)) || ((gYear == 1582) && (gMonth == 10) && (gDay > 14))) {
+    wd = intPart((1461 * (gYear + 4800 + intPart((gMonth - 14) / 12))) / 4) + 
+         intPart((367 * (gMonth - 2 - 12 * (intPart((gMonth - 14) / 12)))) / 12) - 
+         intPart((3 * (intPart((gYear + 4900 + intPart((gMonth - 14) / 12)) / 100))) / 4) + 
+         gDay - 32075;
+  } else {
+    wd = 367 * gYear - intPart((7 * (gYear + 5001 + intPart((gMonth - 9) / 7))) / 4) + 
+         intPart((275 * gMonth) / 9) + gDay + 1729777;
+  }
+  
+  const l = wd - 1948440 + 10632;
+  const n = intPart((l - 1) / 10631);
+  const l1 = l - 10631 * n + 354;
+  const j = (intPart((10985 - l1) / 5316)) * (intPart((50 * l1) / 17719)) + 
+           (intPart(l1 / 5670)) * (intPart((43 * l1) / 15238));
+  const l2 = l1 - (intPart((30 - j) / 15)) * (intPart((17719 * j) / 50)) - 
+            (intPart(j / 16)) * (intPart((15238 * j) / 43)) + 29;
+  const m = intPart((24 * l2) / 709);
+  const d = l2 - intPart((709 * m) / 24);
+  const y = 30 * n + j - 30;
+  
+  const hijriMonths = [
+    'Muharram', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jamadilawal', 'Jamadilakhir',
+    'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijjah'
+  ];
+  
+  return d + ' ' + hijriMonths[m - 1] + ' ' + y;
+}
+
+// Update Hijri date when Gregorian date changes
+function updateHijriDate() {
+  const dateStr = document.getElementById('sl-date').value;
+  const hijriDateEl = document.getElementById('sl-date-hijri');
+  
+  if (dateStr && hijriDateEl) {
+    const hijriDate = gregorianToHijri(dateStr);
+    hijriDateEl.value = hijriDate;
+  }
+}
+
+// === EXCEL IMPORT FUNCTIONALITY ===
+function importCrewFromExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+      
+      // Get first sheet
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+      
+      // Skip header row and process data
+      let importedCount = 0;
+      let errorCount = 0;
+      const crews = JSON.parse(localStorage.getItem('upsi_crew') || '[]');
+      
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        
+        // Expected columns: Full Name, IC Number, Bank Name, Bank Number
+        const fullName = row[0] ? String(row[0]).trim() : '';
+        const icNumber = row[1] ? String(row[1]).trim() : '';
+        const bankName = row[2] ? String(row[2]).trim() : '';
+        const bankNumber = row[3] ? String(row[3]).trim() : '';
+        
+        // Validate required fields
+        if (!fullName || !icNumber || !bankName || !bankNumber) {
+          errorCount++;
+          continue;
+        }
+        
+        // Create crew object
+        const crew = {
+          id: 'crew_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+          name: fullName,
+          ic: icNumber,
+          bank_name: bankName,
+          bank_account: bankNumber
+        };
+        
+        crews.push(crew);
+        importedCount++;
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('upsi_crew', JSON.stringify(crews));
+      
+      // Update global crewList variable
+      crewList = crews;
+      
+      // Show result message
+      let message = `Import selesai!\n\nBerjaya: ${importedCount} krew\n`;
+      if (errorCount > 0) {
+        message += `Gagal: ${errorCount} baris (data tidak lengkap)`;
+      }
+      alert(message);
+      
+      // Refresh crew list
+      renderCrew();
+      
+      // Reset file input
+      event.target.value = '';
+      
+    } catch (error) {
+      alert('Ralat membaca fail Excel!\n\nPastikan format fail adalah:\nKolum 1: Full Name\nKolum 2: IC Number\nKolum 3: Bank Name\nKolum 4: Bank Number\n\nError: ' + error.message);
+      event.target.value = '';
+    }
+  };
+  
+  reader.readAsArrayBuffer(file);
+}
+
+// Download Excel template
+function downloadExcelTemplate() {
+  // Create sample data
+  const data = [
+    ['Full Name', 'IC Number', 'Bank Name', 'Bank Number'],
+    ['Ahmad Bin Ali', '990101-01-1234', 'Maybank', '123456789012'],
+    ['Siti Binti Hassan', '950505-14-5678', 'CIMB Bank', '987654321098'],
+    ['Muhammad Bin Ibrahim', '000808-08-9101', 'Public Bank', '112233445566']
+  ];
+  
+  // Create workbook
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Crew Template');
+  
+  // Set column widths
+  ws['!cols'] = [
+    {wch: 25}, // Full Name
+    {wch: 18}, // IC Number
+    {wch: 20}, // Bank Name
+    {wch: 18}  // Bank Number
+  ];
+  
+  // Download file
+  XLSX.writeFile(wb, 'Template_Import_Crew.xlsx');
+}
+
+// === SURAT LANTIKAN FUNCTIONALITY ===
+let selectedCrewForSL = [];
+let selectedProgramForSL = null;
+
+function initSuratLantikan() {
+  // Populate program selector for Surat Lantikan
+  const programs = JSON.parse(localStorage.getItem('upsi_programs') || '[]');
+  const selector = document.getElementById('prog-selector-sl');
+  if (selector) {
+    selector.innerHTML = '<option value="">— Pilih program untuk surat lantikan —</option>';
+    programs.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      selector.appendChild(opt);
+    });
+  }
+}
+
+function onProgramSelectedSL() {
+  const selector = document.getElementById('prog-selector-sl');
+  const progId = selector.value;
+  
+  if (!progId) {
+    selectedProgramForSL = null;
+    document.getElementById('sl-program-name').value = '';
+    return;
+  }
+  
+  const programs = JSON.parse(localStorage.getItem('upsi_programs') || '[]');
+  selectedProgramForSL = programs.find(p => p.id === progId);
+  
+  if (selectedProgramForSL) {
+    // Auto-populate program name
+    document.getElementById('sl-program-name').value = selectedProgramForSL.name;
+    
+    // Optional: You can also pre-fill reference number based on program
+    // const refField = document.getElementById('sl-ref');
+    // if (!refField.value) {
+    //   refField.value = 'UPS/HEP/JBUD/600Y ( )';
+    // }
+  }
+}
+
+function openAddCrewToSL() {
+  const crews = JSON.parse(localStorage.getItem('upsi_crew') || '[]');
+  if (crews.length === 0) {
+    alert('Tiada krew tersedia. Sila tambah krew terlebih dahulu di menu Crew.');
+    return;
+  }
+  
+  const listEl = document.getElementById('crew-selection-list');
+  listEl.innerHTML = '';
+  
+  crews.forEach(crew => {
+    const isSelected = selectedCrewForSL.some(c => c.id === crew.id);
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.15s';
+    div.innerHTML = `
+      <input type="checkbox" ${isSelected ? 'checked' : ''} data-crew-id="${crew.id}" style="width:18px;height:18px;cursor:pointer">
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:14px;color:var(--text)">${crew.name}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">${crew.ic}</div>
+      </div>
+    `;
+    div.onclick = function(e) {
+      if (e.target.tagName !== 'INPUT') {
+        const checkbox = div.querySelector('input');
+        checkbox.checked = !checkbox.checked;
+      }
+    };
+    listEl.appendChild(div);
+  });
+  
+  document.getElementById('select-crew-modal').classList.add('open');
+}
+
+function closeSelectCrewModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('select-crew-modal').classList.remove('open');
+}
+
+function addSelectedCrewToSL() {
+  const checkboxes = document.querySelectorAll('#crew-selection-list input[type="checkbox"]:checked');
+  const crews = JSON.parse(localStorage.getItem('upsi_crew') || '[]');
+  
+  selectedCrewForSL = [];
+  checkboxes.forEach(cb => {
+    const crewId = cb.dataset.crewId;
+    const crew = crews.find(c => c.id === crewId);
+    if (crew) {
+      selectedCrewForSL.push(crew);
+    }
+  });
+  
+  renderSLCrewTable();
+  closeSelectCrewModal();
+}
+
+function renderSLCrewTable() {
+  const tbody = document.getElementById('sl-crew-tbody');
+  const emptyEl = document.getElementById('sl-crew-empty');
+  const wrapEl = document.getElementById('sl-crew-table-wrap');
+  const countBadge = document.getElementById('sl-crew-count');
+  
+  if (selectedCrewForSL.length === 0) {
+    emptyEl.style.display = 'block';
+    wrapEl.style.display = 'none';
+    countBadge.style.display = 'none';
+    return;
+  }
+  
+  emptyEl.style.display = 'none';
+  wrapEl.style.display = 'block';
+  countBadge.style.display = 'inline-block';
+  countBadge.textContent = selectedCrewForSL.length;
+  
+  tbody.innerHTML = '';
+  selectedCrewForSL.forEach((crew, index) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${index + 1}</td>
+      <td style="font-weight:600">${crew.name}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px">${crew.ic}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--upsi-gold-dark)">${crew.bank_account}</td>
+      <td>
+        <button class="btn-danger-soft" onclick="removeCrewFromSL('${crew.id}')">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Buang
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  calculateSLTotal();
+}
+
+function removeCrewFromSL(crewId) {
+  selectedCrewForSL = selectedCrewForSL.filter(c => c.id !== crewId);
+  renderSLCrewTable();
+}
+
+function calculateSLTotal() {
+  const days = parseInt(document.getElementById('sl-total-days').value) || 1;
+  const total = selectedCrewForSL.length * days * 150; // Assuming RM150 per day per crew
+  document.getElementById('sl-grand-total').value = total;
+}
+
+function generateSuratLantikan() {
+  if (!selectedProgramForSL) {
+    alert('Sila pilih program terlebih dahulu');
+    return;
+  }
+  
+  if (selectedCrewForSL.length === 0) {
+    alert('Sila pilih sekurang-kurangnya satu krew');
+    return;
+  }
+  
+  const date = document.getElementById('sl-date').value;
+  const hijriDate = document.getElementById('sl-date-hijri').value;
+  const payStudent = document.getElementById('sl-pay-student').value;
+  const payExternal = document.getElementById('sl-pay-external').value;
+  const payPerformance = document.getElementById('sl-pay-performance').value;
+  const totalDays = document.getElementById('sl-total-days').value;
+  const grandTotal = document.getElementById('sl-grand-total').value;
+  
+  if (!date) {
+    alert('Sila lengkapkan maklumat tarikh');
+    return;
+  }
+  
+  // Format date for display
+  const formattedDate = formatDateMalay(date);
+  
+  // Generate HTML content for the letter following UPSI template
+  let htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Surat Lantikan - ${selectedProgramForSL.name}</title>
+  <style>
+    @page { margin: 2cm; }
+    body { 
+      font-family: 'Times New Roman', serif; 
+      font-size: 12pt;
+      line-height: 1.5;
+      margin: 0;
+      padding: 20px;
+    }
+    .header-logo {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      border-bottom: 3px solid #672889;
+      padding-bottom: 10px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-box {
+      width: 80px;
+      height: 80px;
+      background: #672889;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    .upsi-text {
+      font-size: 10pt;
+      line-height: 1.2;
+    }
+    .pusat-kebudayaan {
+      background: #672889;
+      color: white;
+      padding: 2px 10px;
+      font-size: 9pt;
+      font-weight: bold;
+      margin-top: 5px;
+      display: inline-block;
+    }
+    .header-right {
+      text-align: right;
+      font-size: 8pt;
+      line-height: 1.3;
+    }
+    .ref-section {
+      margin: 20px 0 30px 0;
+      text-align: right;
+    }
+    .ref-section p {
+      margin: 3px 0;
+    }
+    .recipient {
+      margin-bottom: 30px;
+    }
+    .recipient p {
+      margin: 2px 0;
+    }
+    .greeting {
+      margin: 20px 0;
+      font-style: italic;
+    }
+    .salutation {
+      margin-bottom: 15px;
+    }
+    .subject {
+      text-align: center;
+      font-weight: bold;
+      text-decoration: underline;
+      margin: 30px 0;
+      font-size: 13pt;
+    }
+    .content {
+      text-align: justify;
+      margin: 15px 0;
+    }
+    .indent {
+      text-indent: 1cm;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    table, th, td {
+      border: 1px solid #000;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+    .closing {
+      margin-top: 30px;
+      text-align: center;
+      font-weight: bold;
+      line-height: 1.8;
+    }
+    .signature-section {
+      margin-top: 50px;
+    }
+    .signature-text {
+      text-align: center;
+      font-style: italic;
+    }
+    .signer {
+      text-align: center;
+      margin-top: 80px;
+      font-weight: bold;
+    }
+    .signer-name {
+      text-decoration: underline;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 10pt;
+    }
+    .payment-table {
+      margin-top: 30px;
+    }
+    .payment-table td {
+      padding: 5px 10px;
+    }
+    .total-row {
+      font-weight: bold;
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header with UPSI Logo -->
+  <div class="header-logo">
+    <div class="header-left">
+      <div class="logo-box">UPSI</div>
+      <div>
+        <div class="upsi-text">
+          <strong>UNIVERSITI</strong><br>
+          <strong>PENDIDIKAN</strong><br>
+          <strong>SULTAN IDRIS</strong>
+        </div>
+        <div class="pusat-kebudayaan">PUSAT KEBUDAYAAN</div>
+      </div>
+    </div>
+    <div class="header-right">
+      35900 TANJONG MALIM<br>
+      PERAK DARUL RIDZUAN, MALAYSIA<br>
+      <br>
+      TEL : +603 450 6000<br>
+      FAKS : +603 4524778<br>
+      E-MEL : pusat_kebudayaan@upsi.edu.my
+    </div>
+  </div>
+
+  <!-- Reference Section (Top Right) -->
+  <div class="ref-section">
+    <p><strong>Ruj. Kami :</strong> UPS/HEP/JBUD/600Y ( )</p>
+    <p><strong>Tarikh :</strong> ${formattedDate}</p>
+    <p style="direction: rtl; text-align: right;">${hijriDate} : خيراهـ</p>
+  </div>
+
+  <!-- Recipient -->
+  <div class="recipient">
+    <p><strong>Senarai Nama</strong></p>
+  </div>
+
+  <!-- Greeting -->
+  <div class="greeting">
+    <strong>السلام عليكم ورحمة الله وبركاته</strong>
+  </div>
+
+  <div class="salutation">
+    Saudara/i,
+  </div>
+
+  <!-- Subject -->
+  <div class="subject">
+    LANTIKAN SEBAGAI KREW TEKNIKAL BAGI NAMA PROGRAM
+  </div>
+
+  <!-- Content Paragraph 1 -->
+  <div class="content indent">
+    Saya dengan segala hormatnya merujuk kepada perkara di atas.
+  </div>
+
+  <!-- Content Paragraph 2 -->
+  <div class="content">
+    2. <span style="margin-left: 15px;">Sukacita dimaklumkan saudara/i dilantik menjadi krew teknikal tersebut yang akan bertanggungjawab di <strong>PILIH TEMPAT, UPSI</strong>. Butiran tugas adalah seperti berikut:</span>
+  </div>
+
+  <!-- Program Details Table -->
+  <table>
+    <tr>
+      <td style="width: 40%;"><strong>Tarikh Pemasangan</strong></td>
+      <td>${selectedProgramForSL.installDate || '-'} ${selectedProgramForSL.installDay ? '(' + selectedProgramForSL.installDay + ')' : ''}</td>
+    </tr>
+    <tr>
+      <td><strong>Tarikh Program</strong></td>
+      <td>${selectedProgramForSL.date || '-'} ${selectedProgramForSL.day ? '(' + selectedProgramForSL.day + ')' : ''}</td>
+    </tr>
+    <tr>
+      <td><strong>Masa</strong></td>
+      <td>${selectedProgramForSL.time || '08:00 am – 11:00 pm'}</td>
+    </tr>
+  </table>
+
+  <!-- Content Paragraph 3 -->
+  <div class="content">
+    3. <span style="margin-left: 15px;">Segala perbelanjaan dan kerjasama saudara/i amat dihargai dan dihadiahi dengan upaya rentas kasih, selamat.</span>
+  </div>
+
+  <!-- Closing Statements -->
+  <div class="closing">
+    "MALAYSIA MADANI"<br>
+    "BERKHIDMAT UNTUK NEGARA"<br>
+    "PENERAJU KECEMERLANGAN PENDIDIKAN"
+  </div>
+
+  <!-- Closing Sentence -->
+  <div class="content">
+    Saya yang menjalankan amanah.
+  </div>
+
+  <!-- Signature Section -->
+  <div class="signature-section">
+    <div class="signature-text">
+      Saya yang menjalankan amanah,
+    </div>
+    <div class="signer">
+      <div style="height: 60px;"></div>
+      <div class="signer-name">(MUHAMMAD FAKRULLAH BIN FARROK)</div>
+      <div>Pegawai Kebudayaan</div>
+    </div>
+  </div>
+
+  <!-- Footer Note -->
+  <div class="footer">
+    s.k. - Fail
+  </div>
+
+  <!-- Page Break for Attachment -->
+  <div style="page-break-before: always;"></div>
+
+  <!-- LAMPIRAN: BORANG BAYARAN -->
+  <div class="header-logo">
+    <div class="header-left">
+      <div class="logo-box">UPSI</div>
+      <div>
+        <div class="upsi-text">
+          <strong>UNIVERSITI</strong><br>
+          <strong>PENDIDIKAN</strong><br>
+          <strong>SULTAN IDRIS</strong>
+        </div>
+        <div class="pusat-kebudayaan">PUSAT KEBUDAYAAN</div>
+      </div>
+    </div>
+    <div class="header-right">
+      35900 TANJONG MALIM<br>
+      PERAK DARUL RIDZUAN, MALAYSIA<br>
+      <br>
+      TEL : +603 450 6000<br>
+      FAKS : +603 4524778<br>
+      E-MEL : pusat_kebudayaan@upsi.edu.my
+    </div>
+  </div>
+
+  <div style="text-align: center; margin: 30px 0;">
+    <strong style="text-decoration: underline;">
+      BORANG BAYARAN KREW TEKNIKAL & KHIDMAT PERSEMBAHAN PELAJAR PUSAT KEBUDAYAAN
+    </strong>
+  </div>
+
+  <div style="margin: 20px 0;">
+    <p><strong>Nama Program: ${selectedProgramForSL.name}</strong></p>
+    <p><strong>Tarikh Program: ${selectedProgramForSL.date || '-'}</strong></p>
+  </div>
+
+  <!-- Payment Details Table -->
+  <table style="margin-top: 20px;">
+    <tr style="background-color: #f0f0f0;">
+      <td colspan="2" style="text-align: center;"><strong>Tandakan (/) yang berkaitan di bawah:</strong></td>
+    </tr>
+    <tr>
+      <td style="width: 50%;"><strong>Bayaran Krew Teknikal (Pelajar)</strong></td>
+      <td style="text-align: center;">${payStudent || 'RM 150'}</td>
+    </tr>
+    <tr>
+      <td><strong>Bayaran Krew Teknikal (Luar)</strong></td>
+      <td style="text-align: center;">${payExternal || 'RM 150'}</td>
+    </tr>
+    <tr>
+      <td><strong>Bayaran Khidmat Persembahan Pelajar Cemerlang / Pelajar Cemerlang / Persembahan</strong></td>
+      <td style="text-align: center;">${payPerformance || 'RM 150'}</td>
+    </tr>
+  </table>
+
+  <!-- Crew Members Table -->
+  <table style="margin-top: 30px;">
+    <thead>
+      <tr>
+        <th style="width: 5%;">Bil</th>
+        <th style="width: 35%;">Nama</th>
+        <th style="width: 30%;">No. Matrik (pelajar)/ No. Kad Pengenalan (Krew Luar)</th>
+        <th style="width: 30%;">No. Akaun Bank</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+
+  // Add crew members
+  selectedCrewForSL.forEach((crew, index) => {
+    htmlContent += `
+      <tr>
+        <td style="text-align: center;">${index + 1}</td>
+        <td>${crew.name}</td>
+        <td style="text-align: center;">${crew.ic}</td>
+        <td style="text-align: center;">${crew.bank_account}</td>
+      </tr>
+    `;
+  });
+
+  htmlContent += `
+    </tbody>
+  </table>
+
+  <!-- Total Calculation -->
+  <table class="payment-table">
+    <tr>
+      <td style="width: 70%; text-align: right;"><strong>Kadar Bayaran Seorang (sehari) (RM)</strong></td>
+      <td style="width: 10%; text-align: center;">x</td>
+      <td style="width: 10%; text-align: center;">1</td>
+      <td style="width: 10%; text-align: center;">x</td>
+      <td style="width: 10%; text-align: center;">1</td>
+      <td style="width: 10%; text-align: center;">=</td>
+      <td style="width: 20%; text-align: center;">150</td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="6" style="text-align: right;"><strong>Jumlah Hari</strong></td>
+      <td style="text-align: center;"><strong>x ${totalDays}</strong></td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="6" style="text-align: right;"><strong>Jumlah Orang</strong></td>
+      <td style="text-align: center;"><strong>x ${selectedCrewForSL.length}</strong></td>
+    </tr>
+    <tr class="total-row" style="background-color: #e0e0e0;">
+      <td colspan="6" style="text-align: right; font-size: 14pt;"><strong>Jumlah Keseluruhan (RM)</strong></td>
+      <td style="text-align: center; font-size: 14pt;"><strong>${grandTotal}</strong></td>
+    </tr>
+  </table>
+
+  <!-- Signature Sections -->
+  <div style="display: flex; justify-content: space-between; margin-top: 80px;">
+    <div style="width: 45%; text-align: center;">
+      <div style="border-top: 2px dotted #000; padding-top: 10px; margin-top: 60px;">
+        (Cop Pegawai)/ Tarikh:
+      </div>
+    </div>
+    <div style="width: 45%; text-align: center;">
+      <div style="border-top: 2px dotted #000; padding-top: 10px; margin-top: 60px;">
+        (Cop Pegawai)/ Tarikh:
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 40px; font-size: 10pt;">
+    <p><strong>Sila lengkap bersama-sama borang ini:</strong></p>
+    <p><em>*Krew Lantikan (Krew):</em> Borang lampiran beserta slip pengenalan/kad matrik dan salin halaman buku bank/kad debit.</p>
+    <p><em>*Pelajar Cemerlang/Persembahan:</em> Borang lampiran beserta permohohan pelajar kepada nama peneraju bakat setiap persembahan Pusat Kebudayaan.</p>
+    <p style="margin-top: 20px;"><strong><em>** Notis: Tiada bayaran akan diberi kepada peserta yang tidak melengkapkan maklumat seperti yang tertera di atas.</em></strong></p>
+    <p><strong>Pusat Kebudayaan.</strong></p>
+  </div>
+
+</body>
+</html>
+  `;
+  
+  // Convert HTML to Word document using docx library
+  try {
+    const { Document, Paragraph, TextRun, Table, TableCell, TableRow, WidthType, AlignmentType, BorderStyle } = docx;
+    
+    // Create header paragraphs
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          // Header - UPSI
+          new Paragraph({
+            alignment: AlignmentType.LEFT,
+            children: [
+              new TextRun({
+                text: "UNIVERSITI PENDIDIKAN SULTAN IDRIS",
+                bold: true,
+                size: 24,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.LEFT,
+            children: [
+              new TextRun({
+                text: "PUSAT KEBUDAYAAN",
+                bold: true,
+                size: 20,
+              }),
+            ],
+          }),
+          new Paragraph({
+            text: "",
+            spacing: { after: 200 },
+          }),
+          
+          // Reference section (right aligned)
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({
+                text: "Ruj. Kami : UPS/HEP/JBUD/600Y ( )",
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({
+                text: "Tarikh : " + formattedDate,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({
+                text: hijriDate,
+              }),
+            ],
+            spacing: { after: 400 },
+          }),
+          
+          // Recipient
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Senarai Nama",
+                bold: true,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          
+          // Greeting
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Assalamualaikum warahmatullahi wabarakatuh",
+                italics: true,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          
+          new Paragraph({
+            text: "Saudara/i,",
+            spacing: { after: 200 },
+          }),
+          
+          // Subject
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: "LANTIKAN SEBAGAI KREW TEKNIKAL BAGI NAMA PROGRAM",
+                bold: true,
+                underline: {},
+              }),
+            ],
+            spacing: { before: 200, after: 200 },
+          }),
+          
+          // Content paragraph 1
+          new Paragraph({
+            text: "Saya dengan segala hormatnya merujuk kepada perkara di atas.",
+            spacing: { after: 200 },
+          }),
+          
+          // Content paragraph 2
+          new Paragraph({
+            text: "2. Sukacita dimaklumkan saudara/i dilantik menjadi krew teknikal tersebut yang akan bertanggungjawab di PILIH TEMPAT, UPSI. Butiran tugas adalah seperti berikut:",
+            spacing: { after: 200 },
+          }),
+          
+          // Program details table
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [new Paragraph({ text: "Tarikh Pemasangan", bold: true })],
+                    width: { size: 40, type: WidthType.PERCENTAGE },
+                  }),
+                  new TableCell({
+                    children: [new Paragraph({ text: (selectedProgramForSL.installDate || '-') + (selectedProgramForSL.installDay ? ' (' + selectedProgramForSL.installDay + ')' : '') })],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [new Paragraph({ text: "Tarikh Program", bold: true })],
+                  }),
+                  new TableCell({
+                    children: [new Paragraph({ text: (selectedProgramForSL.date || '-') + (selectedProgramForSL.day ? ' (' + selectedProgramForSL.day + ')' : '') })],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [new Paragraph({ text: "Masa", bold: true })],
+                  }),
+                  new TableCell({
+                    children: [new Paragraph({ text: selectedProgramForSL.time || '08:00 am – 11:00 pm' })],
+                  }),
+                ],
+              }),
+            ],
+          }),
+          
+          // Content paragraph 3
+          new Paragraph({
+            text: "3. Segala perbelanjaan dan kerjasama saudara/i amat dihargai dan dihadiahi dengan upaya rentas kasih, selamat.",
+            spacing: { before: 200, after: 200 },
+          }),
+          
+          // Closing statements
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: '"MALAYSIA MADANI"',
+                bold: true,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: '"BERKHIDMAT UNTUK NEGARA"',
+                bold: true,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: '"PENERAJU KECEMERLANGAN PENDIDIKAN"',
+                bold: true,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          
+          new Paragraph({
+            text: "Saya yang menjalankan amanah.",
+            spacing: { after: 400 },
+          }),
+          
+          // Signature
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            text: "",
+            spacing: { after: 800 },
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: "(MUHAMMAD FAKRULLAH BIN FARROK)",
+                bold: true,
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            text: "Pegawai Kebudayaan",
+          }),
+          
+          new Paragraph({
+            text: "s.k. - Fail",
+            spacing: { before: 200 },
+          }),
+        ],
+      }],
+    });
+    
+    // Generate and download
+    docx.Packer.toBlob(doc).then(blob => {
+      saveAs(blob, `Surat_Lantikan_${selectedProgramForSL.name.replace(/[^a-z0-9]/gi, '_')}_${date}.docx`);
+      alert('Surat Lantikan telah dijana!\n\nProgram: ' + selectedProgramForSL.name + '\nJumlah Krew: ' + selectedCrewForSL.length + '\n\nFail Word (.docx) telah dimuat turun.');
+    });
+    
+  } catch (error) {
+    console.error('Error generating Word document:', error);
+    
+    // Fallback to HTML if Word generation fails
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Surat_Lantikan_${selectedProgramForSL.name.replace(/[^a-z0-9]/gi, '_')}_${date}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert('Word generation tidak tersedia. Fail HTML telah dimuat turun sebagai ganti.\n\nAnda boleh buka fail HTML dan save as Word document.');
+  }
+}
+</script>
+</body>
+</html>
